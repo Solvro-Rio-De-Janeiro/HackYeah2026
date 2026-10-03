@@ -81,18 +81,11 @@ export function DailyAmountPanel() {
         {/* Center: Live Timer Waiting for Deposit (W środku panelu) */}
         <div className="daily-timer-box flex items-center gap-3.5 px-4 py-2.5 bg-white dark:bg-white/5 border border-[#e5e5eb] dark:border-white/10 rounded-xl shadow-xs transition-all">
           <div className="flex items-center justify-center">
-            <span className="relative flex h-3 w-3">
-              <span
-                className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                  recordedToday ? 'bg-emerald-400' : 'bg-amber-400'
-                }`}
-              />
-              <span
-                className={`relative inline-flex rounded-full h-3 w-3 ${
-                  recordedToday ? 'bg-emerald-500' : 'bg-amber-500'
-                }`}
-              />
-            </span>
+            <span
+              className={`inline-block rounded-full h-2.5 w-2.5 ${
+                recordedToday ? 'bg-emerald-500' : 'bg-amber-500'
+              }`}
+            />
           </div>
 
           <div className="flex flex-col">
