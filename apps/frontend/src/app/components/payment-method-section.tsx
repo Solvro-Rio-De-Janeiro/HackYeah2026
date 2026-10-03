@@ -100,7 +100,7 @@ export function PaymentMethodSection({
         <div className="flex items-center gap-1.5">
           <CreditCard className="size-4 text-slate-700 dark:text-white" />
           <span className="text-slate-700 dark:text-white text-[11px] font-mono font-bold tracking-wider uppercase">
-            PAYMENT METHOD
+            METODA PŁATNOŚCI
           </span>
         </div>
 
@@ -114,8 +114,8 @@ export function PaymentMethodSection({
       </div>
 
       <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 leading-relaxed m-0">
-        Connected for daily group accountability pledge deposits. You won't be
-        charged upon sign up.
+        Połączone z codziennym zobowiązaniem grupy do wpłat. Nie pobieramy
+        opłaty przy rejestracji.
       </p>
 
       {/* Payment Method Selector Tabs */}
@@ -137,7 +137,7 @@ export function PaymentMethodSection({
           }`}
         >
           <CreditCard className="size-3.5" />
-          <span>Card</span>
+          <span>Karta</span>
         </button>
 
         <button
@@ -152,7 +152,9 @@ export function PaymentMethodSection({
               : "text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white"
           }`}
         >
-          <span className="font-bold tracking-tighter text-[#e0004d]">BLIK</span>
+          <span className="font-bold tracking-tighter text-[#e0004d]">
+            BLIK
+          </span>
         </button>
       </div>
 
@@ -174,13 +176,13 @@ export function PaymentMethodSection({
                 <>
                   <Check className="size-3 text-emerald-600 dark:text-emerald-400" />
                   <span className="text-emerald-600 dark:text-emerald-400">
-                    Loaded test card!
+                    Wczytano kartę testową!
                   </span>
                 </>
               ) : (
                 <>
                   <Sparkles className="size-3" />
-                  <span>Use Stripe test card (4242)</span>
+                  <span>Użyj testowej karty Stripe (4242)</span>
                 </>
               )}
             </button>
@@ -189,12 +191,12 @@ export function PaymentMethodSection({
           {/* Cardholder Name */}
           <label className="grid gap-1">
             <span className="text-slate-500 dark:text-slate-400 text-[10px] font-mono font-medium tracking-wider uppercase">
-              CARDHOLDER NAME
+              WŁAŚCICIELA KARTY
             </span>
             <input
               {...register("cardholderName")}
               type="text"
-              placeholder="e.g. Jan Kowalski"
+              placeholder="np. Jan Kowalski"
               disabled={disabled}
               autoComplete="cc-name"
               className={`w-full h-10 px-3 border rounded bg-white text-black dark:bg-[#161622] dark:text-white text-sm tracking-tight outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-[#010120]/10 transition-all ${
@@ -213,7 +215,7 @@ export function PaymentMethodSection({
           {/* Card Number with brand detection */}
           <label className="grid gap-1">
             <span className="text-slate-500 dark:text-slate-400 text-[10px] font-mono font-medium tracking-wider uppercase">
-              CARD NUMBER
+              NUMER KARTY
             </span>
             <div className="relative flex items-center">
               <CreditCard className="absolute left-3 size-4 text-slate-400 pointer-events-none shrink-0" />
@@ -263,14 +265,14 @@ export function PaymentMethodSection({
           <div className="grid grid-cols-3 gap-2">
             <label className="grid gap-1">
               <span className="text-slate-500 dark:text-slate-400 text-[10px] font-mono font-medium tracking-wider uppercase">
-                EXPIRES
+                WAŻNA DO
               </span>
               <input
                 {...register("cardExpiry")}
                 type="text"
                 value={cardExpiryValue}
                 onChange={handleExpiryChange}
-                placeholder="MM/YY"
+                placeholder="MM/RR"
                 disabled={disabled}
                 autoComplete="cc-exp"
                 maxLength={5}
@@ -317,7 +319,7 @@ export function PaymentMethodSection({
 
             <label className="grid gap-1">
               <span className="text-slate-500 dark:text-slate-400 text-[10px] font-mono font-medium tracking-wider uppercase">
-                POSTAL CODE
+                KOD POCZTOWY
               </span>
               <input
                 {...register("postalCode")}
@@ -387,8 +389,8 @@ export function PaymentMethodSection({
       <div className="flex items-center gap-2 pt-3 mt-3 border-t border-slate-200/80 dark:border-white/10 text-slate-500 dark:text-slate-400 text-[11px] leading-tight">
         <ShieldCheck className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
         <span>
-          End-to-end 256-bit encryption. Payment info tokenized directly by
-          Stripe (PCI-DSS Level 1 certified).
+          Szyfrowanie end-to-end 256-bit. Dane płatności są tokenizowane
+          bezpośrednio przez Stripe (certyfikacja PCI-DSS Level 1).
         </span>
       </div>
 

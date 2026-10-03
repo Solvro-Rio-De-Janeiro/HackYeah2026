@@ -12,7 +12,7 @@ export function Header() {
 
       <div className="text-[#777781] text-xs tracking-tight flex items-center gap-4">
         <span className="hidden sm:inline">
-          {isLoginPage ? "Don't have an account?" : "Already a member?"}
+          {isLoginPage ? "Nie masz konta?" : "Masz już konto?"}
         </span>
         <Link
           to={isLoginPage ? "/signup" : "/login"}
@@ -21,7 +21,7 @@ export function Header() {
           <span className="text-xs">
             <LogIn className="size-4" />
           </span>
-          {isLoginPage ? "Sign up" : "Log in"}
+          {isLoginPage ? "Zarejestruj się" : "Zaloguj się"}
         </Link>
       </div>
     </header>

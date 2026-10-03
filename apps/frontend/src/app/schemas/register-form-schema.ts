@@ -2,23 +2,23 @@ import { z } from "zod";
 
 export const registerFormSchema = z
   .object({
-    email: z.email({ message: "Please enter a valid email address" }),
+    email: z.email({ message: "Wprowadź poprawny adres e-mail" }),
     password: z
       .string()
-      .min(1, "Password is required")
-      .min(8, "Password must be at least 8 characters long"),
-    repeatPassword: z.string().min(1, "Please confirm your password"),
+      .min(1, "Hasło jest wymagane")
+      .min(8, "Hasło musi mieć co najmniej 8 znaków"),
+    repeatPassword: z.string().min(1, "Potwierdź hasło"),
     username: z
       .string()
-      .min(1, "Username is required")
-      .min(3, "Username must be at least 3 characters long")
-      .max(20, "Username cannot exceed 20 characters")
+      .min(1, "Nazwa użytkownika jest wymagana")
+      .min(3, "Nazwa użytkownika musi mieć co najmniej 3 znaki")
+      .max(20, "Nazwa użytkownika nie może przekraczać 20 znaków")
       .regex(
         /^[a-zA-Z0-9_-]+$/,
-        "Username can only contain letters, numbers, underscores and hyphens",
+        "Nazwa użytkownika może zawierać tylko litery, cyfry, podkreślenia i myślniki",
       ),
     termsAccepted: z.boolean().refine((val) => val === true, {
-      message: "You must accept the terms and conditions",
+      message: "Musisz zaakceptować regulamin",
     }),
     paymentMethod: z.enum(["card", "blik"]).default("card"),
     cardNumber: z.string().optional(),
@@ -29,7 +29,7 @@ export const registerFormSchema = z
     blikCode: z.string().optional(),
   })
   .refine((data) => data.password === data.repeatPassword, {
-    message: "Passwords do not match",
+    message: "Hasła nie są zgodne",
     path: ["repeatPassword"],
   })
   .refine(
@@ -41,9 +41,9 @@ export const registerFormSchema = z
       return true;
     },
     {
-      message: "Please enter a valid card number",
+      message: "Wprowadź poprawny numer karty",
       path: ["cardNumber"],
-    }
+    },
   )
   .refine(
     (data) => {
@@ -53,9 +53,9 @@ export const registerFormSchema = z
       return true;
     },
     {
-      message: "Invalid expiration date (MM/YY)",
+      message: "Nieprawidłowa data ważności (MM/RR)",
       path: ["cardExpiry"],
-    }
+    },
   )
   .refine(
     (data) => {
@@ -65,9 +65,9 @@ export const registerFormSchema = z
       return true;
     },
     {
-      message: "CVC must be 3 or 4 digits",
+      message: "CVC musi składać się z 3 lub 4 cyfr",
       path: ["cardCvc"],
-    }
+    },
   )
   .refine(
     (data) => {
@@ -77,9 +77,9 @@ export const registerFormSchema = z
       return true;
     },
     {
-      message: "Cardholder name is required",
+      message: "Imię i nazwisko właściciela karty jest wymagane",
       path: ["cardholderName"],
-    }
+    },
   )
   .refine(
     (data) => {
@@ -90,9 +90,9 @@ export const registerFormSchema = z
       return true;
     },
     {
-      message: "BLIK code must be 6 digits",
+      message: "Kod BLIK musi składać się z 6 cyfr",
       path: ["blikCode"],
-    }
+    },
   );
 
 export type RegisterFormData = z.infer<typeof registerFormSchema>;
