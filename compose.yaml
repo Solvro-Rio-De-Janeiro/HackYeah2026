@@ -42,6 +42,22 @@ services:
       retries: 3
       start_period: 10s
 
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    profiles: [stripe]
+    restart: unless-stopped
+    command:
+      - listen
+      - --api-key
+      - ${STRIPE_SECRET_KEY:-}
+      - --events
+      - checkout.session.completed,checkout.session.async_payment_succeeded,checkout.session.async_payment_failed,checkout.session.expired,invoice.paid,customer.subscription.deleted
+      - --forward-to
+      - http://backend:8000/api/payments/webhook
+    depends_on:
+      backend:
+        condition: service_healthy
+
   frontend:
     build:
       context: .

@@ -1,4 +1,5 @@
 import stripe
+from auth.dependencies import CurrentUserDep
 from core.db_config import DBSessionDep
 from core.settings import settings
 from fastapi import APIRouter, Header, HTTPException, Request
@@ -16,9 +17,11 @@ router = APIRouter(tags=["payments"])
 
 @router.post("/subscriptions", response_model=SubscriptionCheckoutResponse)
 async def create_subscription(
-    payload: CreateSubscriptionRequest, session: DBSessionDep
+    payload: CreateSubscriptionRequest, session: DBSessionDep, user: CurrentUserDep
 ) -> SubscriptionCheckoutResponse:
-    subscription, checkout_url = await create_subscription_checkout(session, payload)
+    subscription, checkout_url = await create_subscription_checkout(
+        session, payload, user
+    )
     return SubscriptionCheckoutResponse(
         subscription_id=subscription.id, checkout_url=checkout_url
     )

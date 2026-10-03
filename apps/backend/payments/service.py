@@ -5,8 +5,10 @@ from uuid import UUID
 
 import stripe
 from core.settings import settings
+from core.transaction import transaction
 from fastapi import HTTPException
 from goals.models import Challenge, ChallengeState, Goal, GoalPeriod
+from user.models import User, UserRole
 from user_group.models import GroupMemberBalance, UserGroup
 from payments.models import (
     Payment,
@@ -27,12 +29,12 @@ GOAL_PERIOD_INTERVALS = {
 
 
 async def create_subscription_checkout(
-    session: AsyncSession, request: CreateSubscriptionRequest
+    session: AsyncSession, request: CreateSubscriptionRequest, user: User
 ) -> tuple[Subscription, str]:
     if not settings.stripe_secret_key:
         raise HTTPException(status_code=503, detail="Stripe is not configured")
 
-    async with session.begin():
+    async with transaction(session):
         goal = await session.get(Goal, request.goal_id)
         if goal is None:
             raise HTTPException(status_code=404, detail="Goal not found")
@@ -48,6 +50,11 @@ async def create_subscription_checkout(
             raise HTTPException(
                 status_code=403,
                 detail="Group membership does not belong to the goal's challenge",
+            )
+        if membership.user_id != user.id and user.role != UserRole.ADMIN:
+            raise HTTPException(
+                status_code=403,
+                detail="You can only subscribe for your own membership",
             )
 
         active = await session.scalar(
@@ -119,7 +126,7 @@ async def create_subscription_checkout(
             status_code=502, detail="Stripe did not return a Checkout URL"
         )
 
-    async with session.begin():
+    async with transaction(session):
         subscription = await session.get(Subscription, subscription_id)
         if subscription is None:
             raise HTTPException(
@@ -146,7 +153,7 @@ async def _process_subscription_checkout(
     if subscription_id is None:
         return
 
-    async with session.begin():
+    async with transaction(session):
         subscription = await session.get(
             Subscription, subscription_id, with_for_update=True
         )
@@ -175,7 +182,7 @@ async def _process_invoice_paid(session: AsyncSession, invoice: dict[str, Any]) 
         return
     net_amount_gr = await _invoice_net_amount(invoice["id"])
 
-    async with session.begin():
+    async with transaction(session):
         already_recorded = await session.scalar(
             select(Payment.id).where(Payment.stripe_invoice_id == invoice["id"])
         )
@@ -229,7 +236,7 @@ async def _process_invoice_paid(session: AsyncSession, invoice: dict[str, Any]) 
 async def _process_subscription_deleted(
     session: AsyncSession, stripe_subscription: dict[str, Any]
 ) -> None:
-    async with session.begin():
+    async with transaction(session):
         subscription = await session.scalar(
             select(Subscription)
             .where(Subscription.stripe_subscription_id == stripe_subscription["id"])
@@ -244,7 +251,7 @@ async def _process_subscription_deleted(
 async def _cancel_incomplete_subscription(
     session: AsyncSession, subscription_id: UUID
 ) -> None:
-    async with session.begin():
+    async with transaction(session):
         subscription = await session.get(
             Subscription, subscription_id, with_for_update=True
         )

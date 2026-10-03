@@ -10,6 +10,7 @@ from connect.schemas import (
     GoalPurchasePayoutRequest,
 )
 from core.settings import settings
+from core.transaction import transaction
 from fastapi import HTTPException
 from fundation.models import Foundation
 from goals.models import Challenge, Goal
@@ -30,7 +31,7 @@ async def start_foundation_onboarding(
     session: AsyncSession, foundation_id: UUID, contact_email: str
 ) -> tuple[str, str]:
     _require_stripe()
-    async with session.begin():
+    async with transaction(session):
         foundation = await session.get(Foundation, foundation_id, with_for_update=True)
         if foundation is None:
             raise HTTPException(status_code=404, detail="Foundation not found")
@@ -50,7 +51,7 @@ async def start_user_onboarding(
     session: AsyncSession, user_id: UUID
 ) -> tuple[str, str]:
     _require_stripe()
-    async with session.begin():
+    async with transaction(session):
         user = await session.get(User, user_id, with_for_update=True)
         if user is None:
             raise HTTPException(status_code=404, detail="User not found")
@@ -90,7 +91,7 @@ async def pay_out_breach(
     """Send a member's held deposits to the challenge's foundation, per goal."""
     _require_stripe()
     payouts: list[Payout] = []
-    async with session.begin():
+    async with transaction(session):
         membership = await session.get(UserGroup, request.user_group_id)
         if membership is None:
             raise HTTPException(status_code=404, detail="Group membership not found")
@@ -157,7 +158,7 @@ async def pay_out_goal_purchase(
 ) -> Payout:
     """Send a goal's whole saldo to the member who buys the goal's item."""
     _require_stripe()
-    async with session.begin():
+    async with transaction(session):
         goal = await session.get(Goal, request.goal_id, with_for_update=True)
         if goal is None:
             raise HTTPException(status_code=404, detail="Goal not found")
@@ -396,7 +397,7 @@ async def _cancel_subscriptions(
 
     if not canceled:
         return
-    async with session.begin():
+    async with transaction(session):
         for subscription in await session.scalars(
             select(Subscription).where(Subscription.stripe_subscription_id.in_(canceled))
         ):
