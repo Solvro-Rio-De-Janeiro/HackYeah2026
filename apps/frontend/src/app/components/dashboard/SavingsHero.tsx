@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useDashboard, money, dailyAmount } from '../../context/DashboardContext';
+import {
+  useDashboard,
+  money,
+  dailyAmount,
+} from '../../context/DashboardContext';
 
 function getTimeUntilMidnight(): string {
   const now = new Date();
