@@ -9,7 +9,7 @@ from core.db_config import DBSessionDep
 from user import repository
 from user.models import User, UserRole
 
-_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
+_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
 
 
 async def get_current_user(
@@ -45,3 +45,6 @@ def require_role(*allowed_roles: UserRole):
         return user
 
     return _check
+
+
+AdminDep = Annotated[User, Depends(require_role(UserRole.ADMIN))]

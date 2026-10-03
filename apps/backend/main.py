@@ -2,14 +2,15 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-import models  # noqa: F401
+import models  # noqa: F401 — register ORM models before mapper configuration
 from auth.router import router as auth_router
+from connect.router import router as connect_router
+from core.db_config import sessionmanager
 from goals.router import router as goal_router
 from group.router import router as group_router
+from payments.router import router as payment_router
 from user.router import router as user_router
 from user_group.router import router as user_group_router
-from core.db_config import sessionmanager
-import models  # noqa: F401 — register ORM models before mapper configuration
 
 
 @asynccontextmanager
@@ -21,11 +22,13 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-app.include_router(router=goal_router)
-app.include_router(router=user_router)
-app.include_router(router=auth_router)
-app.include_router(router=group_router)
-app.include_router(router=user_group_router)
+app.include_router(goal_router, prefix="/api")
+app.include_router(user_router, prefix="/api")
+app.include_router(auth_router, prefix="/api")
+app.include_router(group_router, prefix="/api")
+app.include_router(user_group_router, prefix="/api")
+app.include_router(payment_router, prefix="/api/payments")
+app.include_router(connect_router, prefix="/api/connect")
 
 
 @app.get("/health")

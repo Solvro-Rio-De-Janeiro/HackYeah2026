@@ -24,8 +24,10 @@ services:
       dockerfile: apps/backend/Dockerfile
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-hackyeah}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-hackyeah}
+      CONNECTION_STRING: postgresql+asyncpg://${POSTGRES_USER:-hackyeah}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-hackyeah}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      FRONTEND_URL: ${FRONTEND_URL:-https://localhost}
     depends_on:
       db:
         condition: service_healthy
@@ -39,6 +41,22 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    profiles: [stripe]
+    restart: unless-stopped
+    command:
+      - listen
+      - --api-key
+      - ${STRIPE_SECRET_KEY:-}
+      - --events
+      - checkout.session.completed,checkout.session.async_payment_succeeded,checkout.session.async_payment_failed,checkout.session.expired,invoice.paid,customer.subscription.deleted
+      - --forward-to
+      - http://backend:8000/api/payments/webhook
+    depends_on:
+      backend:
+        condition: service_healthy
 
   frontend:
     build:
