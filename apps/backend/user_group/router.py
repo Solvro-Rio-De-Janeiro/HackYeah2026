@@ -6,12 +6,22 @@ from core.db_config import DBSessionDep
 from group.errors import GroupNotFoundError
 from group.schemas import GroupResponse
 from user.errors import UserNotFoundError
-from user_group.errors import UserAlreadyInGroupError, UserGroupNotFoundError
+from user_group.errors import (
+    CompletionIndexOutOfRangeError,
+    UserAlreadyInGroupError,
+    UserGroupNotFoundError,
+)
+from user_group.handlers.add_completion_handler import (
+    add_completion as _add_completion,
+)
 from user_group.handlers.add_user_to_group_handler import (
     add_user_to_group as _add_user_to_group,
 )
 from user_group.handlers.get_user_groups_handler import (
     get_user_groups as _get_user_groups,
+)
+from user_group.handlers.mark_completion_handler import (
+    mark_completion as _mark_completion,
 )
 from user_group.handlers.remove_user_from_group_handler import (
     remove_user_from_group as _remove_user_from_group,
@@ -65,3 +75,38 @@ async def get_user_groups(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
         ) from exc
     return [GroupResponse.model_validate(group) for group in groups]
+
+
+@router.post(
+    "/user-group/{user_group_id}/completions", response_model=UserGroupResponse
+)
+async def add_completion(
+    user_group_id: UUID, db: DBSessionDep
+) -> UserGroupResponse:
+    try:
+        user_group = await _add_completion(user_group_id, db)
+    except UserGroupNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
+        ) from exc
+    return UserGroupResponse.model_validate(user_group)
+
+
+@router.patch(
+    "/user-group/{user_group_id}/completions/{index}",
+    response_model=UserGroupResponse,
+)
+async def mark_completion(
+    user_group_id: UUID, index: int, db: DBSessionDep
+) -> UserGroupResponse:
+    try:
+        user_group = await _mark_completion(user_group_id, index, db)
+    except UserGroupNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
+        ) from exc
+    except CompletionIndexOutOfRangeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+        ) from exc
+    return UserGroupResponse.model_validate(user_group)

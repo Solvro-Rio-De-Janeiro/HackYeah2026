@@ -4,3 +4,7 @@ class UserAlreadyInGroupError(Exception):
 
 class UserGroupNotFoundError(Exception):
     pass
+
+
+class CompletionIndexOutOfRangeError(Exception):
+    pass

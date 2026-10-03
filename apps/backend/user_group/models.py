@@ -1,7 +1,7 @@
 from decimal import Decimal
 from uuid import uuid4
 
-from sqlalchemy import UUID, DateTime, ForeignKey, Numeric, func
+from sqlalchemy import ARRAY, UUID, Boolean, DateTime, ForeignKey, Numeric, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.db_config import Base
@@ -18,6 +18,9 @@ class UserGroup(Base):
     )
     group_id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("group.id", ondelete="CASCADE"), nullable=False
+    )
+    completions: Mapped[list[bool]] = mapped_column(
+        ARRAY(Boolean), nullable=False, default=list
     )
 
     user: Mapped["User"] = relationship(back_populates="memberships")

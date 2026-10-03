@@ -36,6 +36,9 @@ class UserGroupRepository:
         await self.session.flush()
         return balances
 
+    async def get_by_id(self, user_group_id: UUID) -> UserGroup | None:
+        return await self.session.get(UserGroup, user_group_id)
+
     async def get_by_user_id(self, user_id: UUID) -> list[UserGroup]:
         statement = (
             select(UserGroup)
@@ -62,3 +65,17 @@ class UserGroupRepository:
     async def delete(self, user_group: UserGroup) -> None:
         await self.session.delete(user_group)
         await self.session.commit()
+
+    async def add_completion(self, user_group: UserGroup) -> UserGroup:
+        user_group.completions = [*user_group.completions, False]
+        await self.session.commit()
+        await self.session.refresh(user_group)
+        return user_group
+
+    async def mark_completion(self, user_group: UserGroup, index: int) -> UserGroup:
+        completions = list(user_group.completions)
+        completions[index] = True
+        user_group.completions = completions
+        await self.session.commit()
+        await self.session.refresh(user_group)
+        return user_group

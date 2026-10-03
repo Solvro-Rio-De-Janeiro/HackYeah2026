@@ -14,3 +14,4 @@ class UserGroupResponse(BaseModel):
     id: UUID
     user_id: UUID
     group_id: UUID
+    completions: list[bool]
