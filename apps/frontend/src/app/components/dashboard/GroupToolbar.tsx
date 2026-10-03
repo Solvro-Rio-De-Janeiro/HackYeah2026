@@ -1,5 +1,5 @@
-import React from 'react';
-import { useDashboard } from '../../context/DashboardContext';
+import React from "react";
+import { useDashboard } from "../../context/DashboardContext";
 
 interface GroupToolbarProps {
   onOpenJoin: () => void;
