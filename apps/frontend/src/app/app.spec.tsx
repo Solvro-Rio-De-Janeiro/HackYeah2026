@@ -1,20 +1,32 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { BrowserRouter, MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import App from './app';
 
 describe('App', () => {
-  it('should render successfully', () => {
+  it('should render successfully on root', () => {
     const { baseElement } = render(
-      <BrowserRouter>
+      <MemoryRouter initialEntries={['/']}>
         <App />
-      </BrowserRouter>
+      </MemoryRouter>
     );
     expect(baseElement).toBeTruthy();
+    expect(screen.getByText('Moja grupa')).toBeTruthy();
   });
 
-  it('should render Sign Up page by default on /', () => {
+  it('should render the brand header and navigation on dashboard', () => {
     render(
-      <MemoryRouter initialEntries={['/']}>
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <App />
+      </MemoryRouter>
+    );
+    expect(screen.getByLabelText('Sober Home')).toBeTruthy();
+    expect(screen.getByText('Moja grupa')).toBeTruthy();
+    expect(screen.getByText('Przyłapania')).toBeTruthy();
+  });
+
+  it('should render Sign Up page on /signup', () => {
+    render(
+      <MemoryRouter initialEntries={['/signup']}>
         <App />
       </MemoryRouter>
     );
@@ -31,14 +43,14 @@ describe('App', () => {
     );
     expect(screen.getByText('Resume progress')).toBeTruthy();
     expect(screen.getByText('Welcome back')).toBeTruthy();
-    expect(screen.getByText(/ENTER SANCTUARY/i)).toBeTruthy();
+    expect(screen.getByRole('button', { name: /LOG IN/i })).toBeTruthy();
   });
 
   it('should navigate between /signup and /login using router links', () => {
     render(
-      <BrowserRouter>
+      <MemoryRouter initialEntries={['/signup']}>
         <App />
-      </BrowserRouter>
+      </MemoryRouter>
     );
     const loginLink = screen.getByRole('tab', { name: /Log In/i });
     fireEvent.click(loginLink);
@@ -53,14 +65,15 @@ describe('App', () => {
     expect(screen.getByText('Create an account')).toBeTruthy();
   });
 
-  it('should toggle password visibility', () => {
+  it('should toggle password visibility on /signup', () => {
     render(
       <MemoryRouter initialEntries={['/signup']}>
         <App />
       </MemoryRouter>
     );
-    const toggleButton = screen.getByLabelText(/Show password/i);
-    fireEvent.click(toggleButton);
+    const toggleButtons = screen.getAllByLabelText(/Show password/i);
+    expect(toggleButtons.length).toBeGreaterThan(0);
+    fireEvent.click(toggleButtons[0]);
     expect(screen.getByLabelText(/Hide password/i)).toBeTruthy();
   });
 });

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, redirect } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { LoginFormData, loginFormSchema } from "../schemas/login-form-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,6 +7,7 @@ import { LogIn } from "lucide-react";
 import { PasswordInput } from "../components/password-input";
 
 export function LoginPage() {
+  const navigate = useNavigate();
   const [serverError, setServerError] = useState<string | null>(null);
 
   const {
@@ -44,7 +45,7 @@ export function LoginPage() {
         throw new Error("Something went wrong. Please try again later.");
       }
 
-      redirect("/dashboard");
+      navigate("/dashboard");
     } catch (err) {
       if (err instanceof Error) {
         setServerError(err.message);
