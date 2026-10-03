@@ -24,7 +24,7 @@ class UserGroupRepository:
         result = await self.session.scalars(statement)
         return list(result.unique().all())
 
-    async def create_balances_for_memberships(
+    async def clear_balances_for_memberships(
         self, memberships: list[UserGroup]
     ) -> list[GroupMemberBalance]:
         balances = [
