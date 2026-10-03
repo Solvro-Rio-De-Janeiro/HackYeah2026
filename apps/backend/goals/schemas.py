@@ -1,5 +1,5 @@
 from uuid import UUID
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from goals.models import AddictionType, GoalPeriod
 
@@ -17,3 +17,12 @@ class CreateGoalRequest(BaseModel):
 
 class FinishGoalRequest(BaseModel):
     id: UUID
+
+
+class GoalResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    saldo: float
+    period: GoalPeriod
+    challenge_id: UUID

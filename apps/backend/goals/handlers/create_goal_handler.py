@@ -2,6 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from goals.goal_repository import GoalRepository
+from goals.models import Goal
 from goals.schemas import CreateGoalRequest
 from user_group.repository import UserGroupRepository
 
@@ -12,7 +13,7 @@ class CreateGoalHandler:
         self.goal_repository = GoalRepository(self.session)
         self.user_group_repository = UserGroupRepository(session=self.session)
 
-    async def handle(self, request: CreateGoalRequest):
+    async def handle(self, request: CreateGoalRequest) -> Goal:
         user_groups = await self.user_group_repository.get_by_group_id(request.group_id)
         if not user_groups:
             raise HTTPException(
@@ -21,6 +22,7 @@ class CreateGoalHandler:
             )
 
         await self.user_group_repository.clear_balances_for_memberships(user_groups)
-        await self.goal_repository.create(request)
+        goal = await self.goal_repository.create(request)
 
         await self.session.commit()
+        return goal
