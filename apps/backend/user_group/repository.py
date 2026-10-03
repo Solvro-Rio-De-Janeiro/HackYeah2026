@@ -36,6 +36,15 @@ class UserGroupRepository:
         await self.session.flush()
         return balances
 
+    async def get_by_user_id(self, user_id: UUID) -> list[UserGroup]:
+        statement = (
+            select(UserGroup)
+            .where(UserGroup.user_id == user_id)
+            .options(joinedload(UserGroup.group))
+        )
+        result = await self.session.scalars(statement)
+        return list(result.unique().all())
+
     async def get_by_user_and_group(
         self, user_id: UUID, group_id: UUID
     ) -> UserGroup | None:
