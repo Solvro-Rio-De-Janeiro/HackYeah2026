@@ -4,13 +4,13 @@ import { AuthLayout } from './components/auth-layout';
 import { SignUpPage } from './pages/sign-up-page';
 import { LoginPage } from './pages/login-page';
 
-import { DashboardProvider } from '../context/DashboardContext';
-import Header from '../components/layout/Header';
-import BottomNav from '../components/layout/BottomNav';
-import DashboardPage from '../pages/DashboardPage';
-import IncidentsPage from '../pages/IncidentsPage';
-import PreferencesPage from '../pages/PreferencesPage';
-import ProfilePage from '../pages/ProfilePage';
+import { DashboardProvider } from './context/DashboardContext';
+import Header from './components/layout/Header';
+import BottomNav from './components/layout/BottomNav';
+import DashboardPage from './pages/DashboardPage';
+import IncidentsPage from './pages/IncidentsPage';
+import PreferencesPage from './pages/PreferencesPage';
+import ProfilePage from './pages/ProfilePage';
 
 function DashboardLayout() {
   const location = useLocation();
