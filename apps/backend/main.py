@@ -24,7 +24,6 @@ app.include_router(router=user_router)
 app.include_router(router=auth_router)
 
 
-
 @app.get("/health")
 def health_check():
     return {"status": "ok"}

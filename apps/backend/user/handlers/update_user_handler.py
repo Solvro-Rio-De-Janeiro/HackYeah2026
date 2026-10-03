@@ -9,7 +9,9 @@ from user.schemas import UpdateUserRequest
 from user.security import hash_password
 
 
-async def update_user(user_id: UUID, request: UpdateUserRequest, db: AsyncSession) -> User:
+async def update_user(
+    user_id: UUID, request: UpdateUserRequest, db: AsyncSession
+) -> User:
     user = await repository.get_user_by_id(user_id, db)
     if user is None:
         raise UserNotFoundError(f"User {user_id} not found")

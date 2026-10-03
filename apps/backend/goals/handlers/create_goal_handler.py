@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from goals.repository import GoalRepository
+from goals.goal_repository import GoalRepository
 from goals.schemas import CreateGoalRequest
 from group.repository import UserGroupRepository
 
@@ -20,7 +20,7 @@ class CreateGoalHandler:
                 detail="No users found for this group",
             )
 
-        await self.user_group_repository.create_balances_for_memberships(user_groups)
+        await self.user_group_repository.clear_balances_for_memberships(user_groups)
         await self.goal_repository.create(request)
 
         await self.session.commit()
