@@ -9,14 +9,20 @@ from core.db_config import sessionmanager
 from goals.router import router as goal_router
 from group.router import router as group_router
 from payments.router import router as payment_router
+from notifications.router import router as notifications_router
 from user.router import router as user_router
 from user_group.router import router as user_group_router
+from core.db_config import sessionmanager
+from core.scheduler import scheduler
+import models  # noqa: F401 — register ORM models before mapper configuration
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    scheduler.start()
     yield
 
+    scheduler.shutdown(wait=False)
     if sessionmanager._engine is not None:
         await sessionmanager.close()
 
@@ -29,6 +35,8 @@ app.include_router(group_router, prefix="/api")
 app.include_router(user_group_router, prefix="/api")
 app.include_router(payment_router, prefix="/api/payments")
 app.include_router(connect_router, prefix="/api/connect")
+app.include_router(router=notifications_router, prefix="/api")
+
 
 
 @app.get("/health")
