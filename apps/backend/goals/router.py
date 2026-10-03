@@ -4,7 +4,8 @@ from fastapi import APIRouter
 
 from core.db_config import DBSessionDep
 from goals.handlers.create_goal_handler import CreateGoalHandler
-from goals.schemas import CreateGoalRequest
+from goals.handlers.finish_goal_handler import FinishGoalHandler
+from goals.schemas import CreateGoalRequest, FinishGoalRequest
 
 router = APIRouter()
 
@@ -17,5 +18,6 @@ async def create_goal(request: CreateGoalRequest, session: DBSessionDep):
 
 
 @router.patch("/goal/{id}")
-def finish_goal(id: UUID):
-    pass
+async def finish_goal(id: UUID, session: DBSessionDep):
+    handler = FinishGoalHandler(session)
+    await handler.handle(FinishGoalRequest(id=id))

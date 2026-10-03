@@ -13,3 +13,7 @@ class CreateGoalRequest(BaseModel):
     price: float
     addiction_type: AddictionType  # enum
     period: GoalPeriod  # enum
+
+
+class FinishGoalRequest(BaseModel):
+    id: UUID
