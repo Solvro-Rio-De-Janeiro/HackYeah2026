@@ -2,6 +2,15 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from './app';
 
+beforeAll(() => {
+  globalThis.ResizeObserver = class ResizeObserverMock implements ResizeObserver {
+    constructor(_callback: ResizeObserverCallback) {}
+    observe(_target: Element) {}
+    unobserve(_target: Element) {}
+    disconnect() {}
+  };
+});
+
 describe('App', () => {
   it('should render successfully on root', () => {
     const { baseElement } = render(
@@ -10,7 +19,7 @@ describe('App', () => {
       </MemoryRouter>
     );
     expect(baseElement).toBeTruthy();
-    expect(screen.getByText('Moja grupa')).toBeTruthy();
+    expect(screen.getByText('Social Accountability & Real Stakes')).toBeTruthy();
   });
 
   it('should render the brand header and navigation on dashboard', () => {
@@ -133,4 +142,3 @@ describe('App', () => {
     expect(screen.getAllByText(/WPŁATA ZAKSIĘGOWANA/i).length).toBeGreaterThan(0);
   });
 });
-

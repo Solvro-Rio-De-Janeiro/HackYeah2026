@@ -21,10 +21,11 @@ export function DailyAmountPanel() {
   const [timeRemaining, setTimeRemaining] = useState(getTimeUntilMidnight());
 
   const amount = dailyAmount(activeGroup);
-  const today = new Date().toLocaleDateString('en-CA');
+  const today = new Date().toLocaleDateString("en-CA");
   const recordedToday = activeGroup.deposits.some(
     (deposit) =>
-      deposit.kind && new Date(deposit.date).toLocaleDateString('en-CA') === today
+      deposit.kind &&
+      new Date(deposit.date).toLocaleDateString("en-CA") === today,
   );
 
   // Live timer tick every second
@@ -180,11 +181,11 @@ export function DailyAmountPanel() {
         onClose={() => setOpen(false)}
         ariaLabel="Dzienna kwota grupy"
         eyebrow="WASZE ZASADY"
-        title={`${money(amount)} dziennie.`}
+        title={`${money(amount)} dziennie`}
         className="group-modal max-h-[90vh] overflow-y-auto"
       >
         <p className="text-xs leading-relaxed text-[#727279] mb-5">
-          To dzienna kwota ustalona dla tej grupy przez jej twórcę. Środki zasilają wspólny cel grupy.
+          To dzienna kwota ustalona dla tej grupy przez jej twórcę, nie abonament za aplikację. Każdy członek ma tę samą stawkę. Środki zasilają wspólny cel grupy.
         </p>
 
         <div className="plan-summary grid grid-cols-2 gap-3.5 p-5 bg-[#f6f5fc] dark:bg-white/5 rounded mb-5 text-xs">

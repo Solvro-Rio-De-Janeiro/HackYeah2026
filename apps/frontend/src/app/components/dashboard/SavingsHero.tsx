@@ -36,13 +36,13 @@ export function SavingsHero({ onShowGoal }: SavingsHeroProps) {
 
   return (
     <section
-      className="savings-hero relative isolate mx-[calc(50%_-_50vw)] box-border grid w-screen max-w-none grid-cols-1 items-center gap-[30px] overflow-hidden rounded-none bg-[#010120] px-[clamp(24px,5vw,80px)] pt-10 pb-7 text-white min-[651px]:grid-cols-[1.2fr_1fr] min-[651px]:pb-[37px] min-[1001px]:grid-cols-[1.3fr_1fr] min-[1450px]:pt-12 cursor-pointer"
+      className="relative isolate box-border grid grid-cols-1 items-center gap-7.5 overflow-hidden rounded-none bg-[#010120] px-[clamp(24px,5vw,80px)] pt-10 pb-7 text-white min-[651px]:grid-cols-[1.2fr_1fr] min-[651px]:pb-[37px] min-[1001px]:grid-cols-[1.3fr_1fr] min-[1450px]:pt-12 cursor-pointer"
       onClick={onShowGoal}
     >
       <div className="min-w-0 px-4 sm:px-6 flex flex-col items-center min-[651px]:items-start text-center min-[651px]:text-left">
         <div className="eyebrow lavender flex items-center justify-center min-[651px]:justify-start gap-2 text-[#bdbbff] font-mono text-[11px] sm:text-[10px] tracking-wider uppercase">
           <span className="status-dot w-1.5 h-1.5 rounded-full bg-[#bdbbff]" />
-          {members.length} {members.length === 1 ? 'OSOBA' : 'OSOBY'}
+          {members.length} {members.length === 1 ? "OSOBA" : "OSOBY"}
         </div>
 
         <h1 className="my-5 sm:my-6 text-center min-[651px]:text-left text-[clamp(44px,7.5vw,62px)] leading-[1.12] font-semibold tracking-[-1.8px] text-[#bdbbff] [overflow-wrap:anywhere]">
@@ -53,7 +53,7 @@ export function SavingsHero({ onShowGoal }: SavingsHeroProps) {
               e.stopPropagation();
               onShowGoal();
             }}
-            aria-label={'Zobacz szczegóły celu: ' + activeGroup.goal}
+            aria-label={"Zobacz szczegóły celu: " + activeGroup.goal}
           >
             {activeGroup.goal}
           </button>
@@ -61,12 +61,13 @@ export function SavingsHero({ onShowGoal }: SavingsHeroProps) {
 
         <p className="m-0 text-center min-[651px]:text-left text-sm sm:text-xs leading-[1.8] text-[#b7b7c7] max-w-md">
           {money(rate)} dziennie. Jeden rytm dla wspólnego celu.
-          <br />
-          Kwotę ustalacie przy tworzeniu grupy.
         </p>
 
-        <div className="mt-[22px] flex flex-wrap items-center justify-center min-[651px]:justify-start gap-5 text-[#9898ad] min-[651px]:mt-[33px]">
-          <div className="member-stack flex items-center pl-1.5" aria-label="Członkowie grupy">
+        <div className="mt-5.5 flex flex-wrap items-center justify-center min-[651px]:justify-start gap-5 text-[#9898ad] min-[651px]:mt-[33px]">
+          <div
+            className="member-stack flex items-center pl-1.5"
+            aria-label="Członkowie grupy"
+          >
             {members.map((member) => (
               <span
                 key={member.initials}
@@ -77,7 +78,7 @@ export function SavingsHero({ onShowGoal }: SavingsHeroProps) {
                 {member.initials}
               </span>
             ))}
-            <span className="stack-caption text-xs ml-3 text-[#b7b7c7]">
+            <span className="max-sm:hidden stack-caption text-xs ml-3 text-[#b7b7c7]">
               Jedna grupa. Wspólny kierunek.
             </span>
           </div>
@@ -94,16 +95,32 @@ export function SavingsHero({ onShowGoal }: SavingsHeroProps) {
           aria-valuemax={100}
           aria-valuetext={`${percentage}% celu, zebrano ${money(groupTotal)} z ${money(activeGroup.target)}`}
         >
-          <svg className="savings-ring absolute top-0 left-0 w-full h-auto overflow-visible" viewBox="0 0 300 170" aria-hidden="true">
+          <svg
+            className="savings-ring absolute top-0 left-0 w-full h-auto overflow-visible"
+            viewBox="0 0 300 170"
+            aria-hidden="true"
+          >
             <defs>
-              <linearGradient id="savings-ring-gradient" x1="0" y1="0" x2="1" y2="1">
+              <linearGradient
+                id="savings-ring-gradient"
+                x1="0"
+                y1="0"
+                x2="1"
+                y2="1"
+              >
                 <stop offset="0%" stopColor="#eeecff" />
                 <stop offset="45%" stopColor="#bdbbff" />
                 <stop offset="100%" stopColor="#756ace" />
               </linearGradient>
             </defs>
-            <path className="ring-depth fill-none stroke-[17] [stroke-linecap:round]" d="M17 150 A133 133 0 0 1 283 150" />
-            <path className="ring-track fill-none stroke-[17] [stroke-linecap:round]" d="M17 150 A133 133 0 0 1 283 150" />
+            <path
+              className="ring-depth fill-none stroke-[17] [stroke-linecap:round]"
+              d="M17 150 A133 133 0 0 1 283 150"
+            />
+            <path
+              className="ring-track fill-none stroke-[17] [stroke-linecap:round]"
+              d="M17 150 A133 133 0 0 1 283 150"
+            />
             <path
               className="ring-value fill-none stroke-[17] [stroke-linecap:round]"
               d="M17 150 A133 133 0 0 1 283 150"
@@ -114,7 +131,7 @@ export function SavingsHero({ onShowGoal }: SavingsHeroProps) {
 
           <div className="savings-disc-content absolute inset-[29%_20px_0] flex flex-col items-center justify-center text-center gap-2.5">
             <span className="eyebrow lavender font-mono text-[9px] uppercase tracking-wider text-[#bdbbff]">
-              WSPÓLNY CEL · DEMO
+              WSPÓLNY CEL
             </span>
             <strong className="text-[clamp(23px,3.3vw,40px)] leading-[1.15] tracking-[-1.5px] font-semibold text-white">
               {money(groupTotal)}
