@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     jwt_access_token_expires_minutes: int = Field(
         default=60, validation_alias="JWT_ACCESS_TOKEN_EXPIRES_MINUTES"
     )
+    vapid_private_key: str = Field(default="", validation_alias="VAPID_PRIVATE_KEY")
+    vapid_subject: str = Field(
+        default="mailto:admin@example.com", validation_alias="VAPID_SUBJECT"
+    )
 
 
 settings = Settings()

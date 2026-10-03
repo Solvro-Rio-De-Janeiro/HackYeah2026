@@ -66,6 +66,12 @@ class UserGroupRepository:
         await self.session.delete(user_group)
         await self.session.commit()
 
+    async def deactivate(self, user_group: UserGroup) -> UserGroup:
+        user_group.active = False
+        await self.session.commit()
+        await self.session.refresh(user_group)
+        return user_group
+
     async def add_completion(self, user_group: UserGroup) -> UserGroup:
         user_group.completions = [*user_group.completions, False]
         await self.session.commit()

@@ -15,3 +15,4 @@ class UserGroupResponse(BaseModel):
     user_id: UUID
     group_id: UUID
     completions: list[bool]
+    active: bool

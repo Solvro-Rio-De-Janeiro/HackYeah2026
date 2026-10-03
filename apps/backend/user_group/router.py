@@ -17,6 +17,9 @@ from user_group.handlers.add_completion_handler import (
 from user_group.handlers.add_user_to_group_handler import (
     add_user_to_group as _add_user_to_group,
 )
+from user_group.handlers.deactivate_user_group_handler import (
+    deactivate_user_group as _deactivate_user_group,
+)
 from user_group.handlers.get_user_groups_handler import (
     get_user_groups as _get_user_groups,
 )
@@ -62,6 +65,21 @@ async def remove_user_from_group(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
         ) from exc
+
+
+@router.patch(
+    "/user-group/{user_group_id}/deactivate", response_model=UserGroupResponse
+)
+async def deactivate_user_group(
+    user_group_id: UUID, db: DBSessionDep
+) -> UserGroupResponse:
+    try:
+        user_group = await _deactivate_user_group(user_group_id, db)
+    except UserGroupNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
+        ) from exc
+    return UserGroupResponse.model_validate(user_group)
 
 
 @router.get("/user-group/user/{user_id}", response_model=list[GroupResponse])

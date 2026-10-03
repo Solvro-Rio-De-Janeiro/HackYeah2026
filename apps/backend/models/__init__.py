@@ -15,6 +15,8 @@ from payments.models import (
     SubscriptionInterval,
     SubscriptionStatus,
 )
+from notifications.models import PushSubscription
+
 from user.models import (
     User,
     UserRole,
@@ -41,6 +43,7 @@ __all__ = [
     "Subscription",
     "SubscriptionInterval",
     "SubscriptionStatus",
+    "PushSubscription",
     "User",
     "UserGroup",
     "UserRole",

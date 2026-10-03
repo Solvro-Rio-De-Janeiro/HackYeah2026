@@ -22,14 +22,13 @@ class UserGroup(Base):
     completions: Mapped[list[bool]] = mapped_column(
         ARRAY(Boolean), nullable=False, default=list
     )
+    active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     user: Mapped["User"] = relationship(back_populates="memberships")
     group: Mapped["Group"] = relationship(back_populates="memberships")
     balance: Mapped["GroupMemberBalance | None"] = relationship(
         back_populates="membership", uselist=False, cascade="all, delete-orphan"
     )
-
-
 class GroupMemberBalance(Base):
     __tablename__ = "group_member_balance"
 

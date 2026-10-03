@@ -23,6 +23,7 @@ class User(Base):
         String(255), nullable=True, unique=True
     )
 
-    memberships: Mapped[list["UserGroup"]] = relationship(
+    memberships: Mapped[list["UserGroup"]] = relationship(back_populates="user")
+    push_subscriptions: Mapped[list["PushSubscription"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
