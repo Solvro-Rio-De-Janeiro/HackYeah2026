@@ -1,11 +1,16 @@
+from uuid import UUID
+
 from fastapi import APIRouter, HTTPException, status
 
 from core.db_config import DBSessionDep
 from group.errors import GroupNotFoundError
 from user.errors import UserNotFoundError
-from user_group.errors import UserAlreadyInGroupError
+from user_group.errors import UserAlreadyInGroupError, UserGroupNotFoundError
 from user_group.handlers.add_user_to_group_handler import (
     add_user_to_group as _add_user_to_group,
+)
+from user_group.handlers.remove_user_from_group_handler import (
+    remove_user_from_group as _remove_user_from_group,
 )
 from user_group.schemas import AddUserToGroupRequest, UserGroupResponse
 
@@ -31,3 +36,15 @@ async def add_user_to_group(
             status_code=status.HTTP_409_CONFLICT, detail=str(exc)
         ) from exc
     return UserGroupResponse.model_validate(user_group)
+
+
+@router.delete("/user-group/{group_id}/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_user_from_group(
+    group_id: UUID, user_id: UUID, db: DBSessionDep
+) -> None:
+    try:
+        await _remove_user_from_group(group_id, user_id, db)
+    except UserGroupNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
+        ) from exc

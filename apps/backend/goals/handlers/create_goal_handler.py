@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from goals.repository import GoalRepository
 from goals.schemas import CreateGoalRequest
-from group.repository import UserGroupRepository
+from user_group.repository import UserGroupRepository
 
 
 class CreateGoalHandler:

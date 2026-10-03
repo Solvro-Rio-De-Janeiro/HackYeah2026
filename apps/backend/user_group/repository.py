@@ -49,3 +49,7 @@ class UserGroupRepository:
         await self.session.commit()
         await self.session.refresh(user_group)
         return user_group
+
+    async def delete(self, user_group: UserGroup) -> None:
+        await self.session.delete(user_group)
+        await self.session.commit()
