@@ -1,0 +1,13 @@
+.git
+.github
+.nx
+node_modules
+dist
+coverage
+.venv
+venv
+__pycache__
+.pytest_cache
+.env
+.env.local
+.env.*.local
