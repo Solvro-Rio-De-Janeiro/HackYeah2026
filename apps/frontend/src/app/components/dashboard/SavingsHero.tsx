@@ -1,5 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDashboard, money, dailyAmount } from '../../context/DashboardContext';
+
+function getTimeUntilMidnight(): string {
+  const now = new Date();
+  const midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  const diffSec = Math.max(0, Math.floor((midnight.getTime() - now.getTime()) / 1000));
+  const hours = String(Math.floor(diffSec / 3600)).padStart(2, '0');
+  const minutes = String(Math.floor((diffSec % 3600) / 60)).padStart(2, '0');
+  const seconds = String(diffSec % 60).padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
+}
 
 interface SavingsHeroProps {
   onShowGoal: () => void;
@@ -8,6 +19,20 @@ interface SavingsHeroProps {
 export function SavingsHero({ onShowGoal }: SavingsHeroProps) {
   const { activeGroup, members, groupTotal, percentage } = useDashboard();
   const rate = dailyAmount(activeGroup);
+  const [timeRemaining, setTimeRemaining] = useState(getTimeUntilMidnight());
+
+  const today = new Date().toLocaleDateString('en-CA');
+  const recordedToday = activeGroup.deposits.some(
+    (deposit) =>
+      deposit.kind && new Date(deposit.date).toLocaleDateString('en-CA') === today
+  );
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeRemaining(getTimeUntilMidnight());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <section
@@ -100,6 +125,21 @@ export function SavingsHero({ onShowGoal }: SavingsHeroProps) {
             <span className="disc-percentage font-mono text-[9px] text-[#bdbbff] bg-[#bdbbff12] border border-[#bdbbff25] px-2.5 py-1 rounded-full mt-0.5">
               {percentage}% CELU
             </span>
+
+            <div
+              className="inline-flex items-center gap-1.5 font-mono text-[9px] text-[#bdbbff] bg-[#01012090] border border-[#bdbbff30] px-2.5 py-0.5 rounded-full mt-0.5"
+              role="timer"
+              aria-label={recordedToday ? `Wpłacono na dziś, następna wpłata za ${timeRemaining}` : `Czeka na wpłatę, pozostało ${timeRemaining}`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  recordedToday ? 'bg-[#85ebcf]' : 'bg-[#bdbbff] animate-ping'
+                }`}
+              />
+              <span>
+                {recordedToday ? `WPŁACONO · KOLEJNA ZA ${timeRemaining}` : `CZEKA NA WPŁATĘ · ${timeRemaining}`}
+              </span>
+            </div>
           </div>
         </div>
 

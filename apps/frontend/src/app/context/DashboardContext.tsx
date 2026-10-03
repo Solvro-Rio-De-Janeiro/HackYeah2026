@@ -33,10 +33,19 @@ export function dailyAmount(group: Group): number {
 
 function readSaved<T>(key: string, fallback: T): T {
   try {
+    if (typeof localStorage === 'undefined') return fallback;
     return JSON.parse(localStorage.getItem(key) || 'null') ?? fallback;
   } catch {
     return fallback;
   }
+}
+
+function writeSaved(key: string, value: unknown): void {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+  } catch {}
 }
 
 interface DashboardContextType {
@@ -141,23 +150,23 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
 
   const updateGroups = (next: Group[]) => {
     setGroups(next);
-    localStorage.setItem('odnowa-groups', JSON.stringify(next));
+    writeSaved('odnowa-groups', next);
   };
 
   const selectGroup = (id: string) => {
     setActiveId(id);
-    localStorage.setItem('odnowa-active-group', JSON.stringify(id));
+    writeSaved('odnowa-active-group', id);
   };
 
   const updateIncidents = (next: Incident[]) => {
-    localStorage.setItem('odnowa-incidents', JSON.stringify(next));
+    writeSaved('odnowa-incidents', next);
     setIncidents(next);
   };
 
   const updateSettings = (key: string, value: boolean) => {
     const next = { ...settings, [key]: value };
     setSettings(next);
-    localStorage.setItem('odnowa-settings', JSON.stringify(next));
+    writeSaved('odnowa-settings', next);
   };
 
   const clearHistory = () => {
