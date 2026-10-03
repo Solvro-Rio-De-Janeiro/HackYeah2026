@@ -5,8 +5,14 @@ from fastapi import APIRouter, Header, HTTPException, Request
 from payments.schemas import (
     CheckoutSessionResponse,
     CreateCheckoutSessionRequest,
+    CreateSubscriptionRequest,
+    SubscriptionCheckoutResponse,
 )
-from payments.service import create_checkout_session, process_checkout_webhook
+from payments.service import (
+    create_checkout_session,
+    create_subscription_checkout,
+    process_stripe_webhook,
+)
 
 router = APIRouter(tags=["payments"])
 
@@ -17,6 +23,16 @@ async def create_checkout(
 ) -> CheckoutSessionResponse:
     payment, checkout_url = await create_checkout_session(session, payload)
     return CheckoutSessionResponse(payment_id=payment.id, checkout_url=checkout_url)
+
+
+@router.post("/subscriptions", response_model=SubscriptionCheckoutResponse)
+async def create_subscription(
+    payload: CreateSubscriptionRequest, session: DBSessionDep
+) -> SubscriptionCheckoutResponse:
+    subscription, checkout_url = await create_subscription_checkout(session, payload)
+    return SubscriptionCheckoutResponse(
+        subscription_id=subscription.id, checkout_url=checkout_url
+    )
 
 
 @router.post("/webhook")
@@ -36,5 +52,5 @@ async def stripe_webhook(
     except (ValueError, stripe.SignatureVerificationError) as error:
         raise HTTPException(status_code=400, detail="Invalid Stripe webhook") from error
 
-    await process_checkout_webhook(session, event)
+    await process_stripe_webhook(session, event)
     return {"received": True}

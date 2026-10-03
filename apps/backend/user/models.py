@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from sqlalchemy import (
     Enum,
+    String,
     Text,
     UUID,
 )
@@ -28,5 +29,8 @@ class User(Base):
         Enum(UserRole, name="user_role"), nullable=False
     )
     password_hash: Mapped[str] = mapped_column(Text, nullable=False)
+    stripe_account_id: Mapped[str | None] = mapped_column(
+        String(255), nullable=True, unique=True
+    )
 
     memberships: Mapped[list["UserGroup"]] = relationship(back_populates="user")

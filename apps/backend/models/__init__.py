@@ -1,3 +1,4 @@
+from connect.models import Payout, PayoutKind, PayoutStatus
 from fundation.models import Foundation
 from goals.models import (
     AddictionType,
@@ -12,7 +13,13 @@ from group.models import (
     GroupMemberBalance,
     UserGroup,
 )
-from payments.models import Payment, PaymentStatus
+from payments.models import (
+    Payment,
+    PaymentStatus,
+    Subscription,
+    SubscriptionInterval,
+    SubscriptionStatus,
+)
 from user.models import (
     User,
     UserRole,
@@ -30,6 +37,12 @@ __all__ = [
     "GroupMemberBalance",
     "Payment",
     "PaymentStatus",
+    "Payout",
+    "PayoutKind",
+    "PayoutStatus",
+    "Subscription",
+    "SubscriptionInterval",
+    "SubscriptionStatus",
     "User",
     "UserGroup",
     "UserRole",
