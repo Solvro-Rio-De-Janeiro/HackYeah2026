@@ -32,6 +32,7 @@
 
 body {
   margin: 0;
+  font-family: var(--font-sans);
   background-color: var(--theme-canvas);
   color: var(--theme-text);
   transition: background-color 280ms ease, color 280ms ease;

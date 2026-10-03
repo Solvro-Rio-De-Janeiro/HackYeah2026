@@ -22,7 +22,7 @@ export function BottomNav() {
         {navigationTabs.map((item) => {
           const isActive =
             item.path === '/'
-              ? currentPath === '/'
+              ? currentPath === '/' || currentPath === '/dashboard'
               : currentPath.startsWith(item.path);
 
           return (
