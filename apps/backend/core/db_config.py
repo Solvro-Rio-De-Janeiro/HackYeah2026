@@ -1,52 +1,62 @@
-from collections.abc import AsyncIterator
+import contextlib
+from collections.abc import AsyncGenerator
+from typing import Annotated, Any
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from sqlalchemy.ext.asyncio import (
-    AsyncSession,
-    async_sessionmaker,
-    create_async_engine,
-)
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import declarative_base
 
+from core.settings import Settings
 
-class DatabaseSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
-
-    database_url: str
-    db_pool_size: int = 5
-    db_max_overflow: int = 10
-    db_pool_timeout: int = 30
-    db_pool_recycle: int = 1800
-    db_echo: bool = False
-
-    @property
-    def async_database_url(self) -> str:
-        if self.database_url.startswith("postgres://"):
-            return self.database_url.replace(
-                "postgres://", "postgresql+asyncpg://", 1
-            )
-        if self.database_url.startswith("postgresql://"):
-            return self.database_url.replace(
-                "postgresql://", "postgresql+asyncpg://", 1
-            )
-        return self.database_url
+Base = declarative_base()
+settings = Settings()
 
 
-settings = DatabaseSettings()
-engine = create_async_engine(
-    settings.async_database_url,
-    pool_size=settings.db_pool_size,
-    max_overflow=settings.db_max_overflow,
-    pool_timeout=settings.db_pool_timeout,
-    pool_recycle=settings.db_pool_recycle,
-    echo=settings.db_echo,
-)
-session_factory = async_sessionmaker(engine, expire_on_commit=False)
+class DatabaseSessionManager:
+    def __init__(self, host: str, engine_kwargs: dict[str, Any] = {}):
+        self._engine = create_async_engine(host, **engine_kwargs)
+        self._sessionmaker = async_sessionmaker(
+            autocommit=False, expire_on_commit=False, bind=self._engine
+        )
+
+    async def close(self):
+        if self._engine is None:
+            raise Exception("DatabaseSessionManager is not initialized")
+        await self._engine.dispose()
+        self._engine = None
+        self._sessionmaker = None
+
+    @contextlib.asynccontextmanager
+    async def connect(self) -> AsyncGenerator[AsyncSession]:
+        if self._engine is None:
+            raise Exception("DatabaseSessionManager is not initialized")
+        async with self._engine.begin() as connection:
+            try:
+                yield connection
+            except Exception:
+                await connection.rollback()
+                raise
+
+    @contextlib.asynccontextmanager
+    async def session(self) -> AsyncGenerator[AsyncSession]:
+        if self._sessionmaker is None:
+            raise Exception("DatabaseSessionManager is not initialized")
+        session = self._sessionmaker()
+        try:
+            yield session
+        except Exception:
+            await session.rollback()
+            raise
+        finally:
+            await session.close()
 
 
-async def get_session() -> AsyncIterator[AsyncSession]:
-    async with session_factory() as session:
+sessionmanager = DatabaseSessionManager(settings.connection_string)
+
+
+async def get_db() -> AsyncGenerator[AsyncSession]:
+    async with sessionmanager.session() as session:
         yield session
 
 
-async def dispose_engine() -> None:
-    await engine.dispose()
+DBSessionDep = Annotated[AsyncSession, Depends(get_db)]

@@ -2,13 +2,15 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from core.db_config import dispose_engine
+from core.db_config import sessionmanager
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI):
+async def lifespan(app: FastAPI):
     yield
-    await dispose_engine()
+
+    if sessionmanager._engine is not None:
+        await sessionmanager.close()
 
 
 app = FastAPI(lifespan=lifespan)
