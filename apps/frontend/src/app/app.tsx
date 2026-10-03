@@ -1,45 +1,51 @@
-// Uncomment this line to use CSS modules
-// import styles from './app.module.css';
-import NxWelcome from "./nx-welcome";
-
-import { Route, Routes, Link } from 'react-router-dom';
+import React from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { DashboardProvider } from '../context/DashboardContext';
+import Header from '../components/layout/Header';
+import BottomNav from '../components/layout/BottomNav';
+import DashboardPage from '../pages/DashboardPage';
+import IncidentsPage from '../pages/IncidentsPage';
+import PreferencesPage from '../pages/PreferencesPage';
+import ProfilePage from '../pages/ProfilePage';
 
 export function App() {
+  const location = useLocation();
+
+  React.useEffect(() => {
+    const titles: Record<string, string> = {
+      '/': 'Sober // Moja grupa',
+      '/incidents': 'Sober // Przyłapania',
+      '/preferences': 'Sober // Preferencje',
+      '/profile': 'Sober // Profil'
+    };
+    document.title = titles[location.pathname] || 'Sober // Dashboard';
+  }, [location.pathname]);
+
   return (
-    <div>
-      <NxWelcome title="frontend"/>
-    
-    {/* START: routes */}
-    {/* These routes and navigation have been generated for you */}
-    {/* Feel free to move and update them to fit your needs */}
-    <br/>
-    <hr/>
-    <br/>
-    <nav>
-      <ul>
-        <li><Link to="/">Home</Link></li>
-        <li><Link to="/page-2">Page 2</Link></li>
-      </ul>
-    </nav>
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <div>This is the generated root route. <Link to="/page-2">Click here for page 2.</Link></div>
-        }
-      />
-      <Route
-        path="/page-2"
-        element={
-          <div><Link to="/">Click here to go back to root page.</Link></div>
-        }
-      />
-    </Routes>
-    {/* END: routes */}
-    </div>
+    <DashboardProvider>
+      <div className="app-shell overflow-x-clip">
+        <a href="#main-content" className="skip-link">
+          Przejdź do treści głównej
+        </a>
+        <Header />
+        <main
+          id="main-content"
+          tabIndex={-1}
+          key={location.pathname}
+          className="screen-transition px-4 sm:px-8 lg:px-12 outline-none"
+        >
+          <Routes>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/incidents" element={<IncidentsPage />} />
+            <Route path="/preferences" element={<PreferencesPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </main>
+        <BottomNav />
+      </div>
+    </DashboardProvider>
   );
 }
 
 export default App;
-
-
