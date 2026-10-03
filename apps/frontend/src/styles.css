@@ -659,3 +659,11 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
     transition: none !important;
   }
 }
+
+@layer utilities {
+  @media (width >= 40rem) {
+    .sm\:px-6 {
+      padding-inline: calc(var(--spacing) * 6) !important;
+    }
+  }
+}
