@@ -1,19 +1,10 @@
-from enum import StrEnum
 from uuid import uuid4
 
-from sqlalchemy import (
-    Enum,
-    Text,
-    UUID,
-)
+from sqlalchemy import UUID, Enum, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.db_config import Base
-
-
-class UserRole(StrEnum):
-    USER = "user"
-    ADMIN = "admin"
+from .user_role import UserRole
 
 
 class User(Base):
