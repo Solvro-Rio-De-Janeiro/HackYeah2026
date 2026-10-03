@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import {
-  useDashboard,
-  money,
-  dailyAmount,
-} from '../../context/DashboardContext';
+import { useDashboard, money, dailyAmount } from '../../context/DashboardContext';
 import Modal from '../common/Modal';
-import { CheckCircle2, Clock, Repeat } from 'lucide-react';
+import { CheckCircle2, Clock } from 'lucide-react';
 
 function getTimeUntilMidnight(): string {
   const now = new Date();
@@ -28,8 +24,7 @@ export function DailyAmountPanel() {
   const today = new Date().toLocaleDateString('en-CA');
   const recordedToday = activeGroup.deposits.some(
     (deposit) =>
-      deposit.kind &&
-      new Date(deposit.date).toLocaleDateString('en-CA') === today
+      deposit.kind && new Date(deposit.date).toLocaleDateString('en-CA') === today
   );
 
   // Live timer tick every second
@@ -48,7 +43,7 @@ export function DailyAmountPanel() {
       amount,
       date: new Date().toISOString(),
       note: 'Dzienna kwota grupy · wpłata użytkownika',
-      kind: 'daily-demo' as const,
+      kind: 'daily-demo' as const
     };
 
     updateGroups(
@@ -68,7 +63,7 @@ export function DailyAmountPanel() {
         {/* Left: Daily Amount Value */}
         <div className="subscription-price flex items-center gap-3.5">
           <span className="subscription-mark w-10 h-10 rounded-full grid place-items-center bg-[#eeedff] dark:bg-white/10 text-[#6b62aa] dark:text-[#bdbbff] text-xl font-mono">
-            <Repeat className="size-6" />
+            ↻
           </span>
           <div className="flex flex-col gap-1">
             <span className="eyebrow muted text-[9px] font-mono tracking-wider uppercase text-[#727279] dark:text-slate-400">
@@ -81,19 +76,6 @@ export function DailyAmountPanel() {
               </span>
             </strong>
           </div>
-        </div>
-
-        {/* Monthly per person */}
-        <div className="flex flex-col gap-1">
-          <span className="eyebrow muted text-[9px] font-mono tracking-wider uppercase text-[#727279] dark:text-slate-400">
-            Miesięcznie{' '}
-          </span>
-          <strong className="text-2xl font-semibold tracking-tight text-[#010120] dark:text-white">
-            {money(amount * 30)}
-            <span className="text-xs font-normal text-[#727279] dark:text-slate-400 tracking-normal">
-              {' '}/ osoba
-            </span>
-          </strong>
         </div>
 
         {/* Center: Live Timer Waiting for Deposit (W środku panelu) */}
@@ -198,11 +180,11 @@ export function DailyAmountPanel() {
         onClose={() => setOpen(false)}
         ariaLabel="Dzienna kwota grupy"
         eyebrow="WASZE ZASADY"
-        title={`${money(amount)} dziennie`}
+        title={`${money(amount)} dziennie.`}
         className="group-modal max-h-[90vh] overflow-y-auto"
       >
-        <p className="text-xs leading-relaxed text-[#727279] dark:text-slate-400 mb-5">
-          To dzienna kwota ustalona dla tej grupy przez jej twórcę, nie abonament za aplikację. Środki zasilają wspólny cel grupy.
+        <p className="text-xs leading-relaxed text-[#727279] mb-5">
+          To dzienna kwota ustalona dla tej grupy przez jej twórcę. Środki zasilają wspólny cel grupy.
         </p>
 
         <div className="plan-summary grid grid-cols-2 gap-3.5 p-5 bg-[#f6f5fc] dark:bg-white/5 rounded mb-5 text-xs">
@@ -224,7 +206,7 @@ export function DailyAmountPanel() {
           <span className="text-[#727279] dark:text-slate-400">Status na dziś</span>
           <strong
             className={`text-right font-semibold font-mono ${
-              recordedToday ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'
+              recordedToday ? 'text-emerald-600' : 'text-amber-600'
             }`}
           >
             {recordedToday ? 'Opłacono na dziś ✓' : `Czeka na wpłatę (${timeRemaining})`}
@@ -247,7 +229,7 @@ export function DailyAmountPanel() {
           )}
         </button>
 
-        <p className="small-text text-[10px] leading-relaxed text-[#727279] dark:text-slate-400 mt-4">
+        <p className="small-text text-[10px] leading-relaxed text-[#727279] mt-4">
           Wersja demonstracyjna z czasem rzeczywistym. Żadne prawdziwe pieniądze nie są pobierane z konta.
         </p>
       </Modal>

@@ -1,10 +1,15 @@
-import React, { useState } from "react";
-import { useDashboard, money } from "../context/DashboardContext";
-import Icon from "../components/common/Icon";
-import Modal from "../components/common/Modal";
+import React, { useState } from 'react';
+import { useDashboard, money } from '../context/DashboardContext';
+import Icon from '../components/common/Icon';
+import Modal from '../components/common/Modal';
 
 export function ProfilePage() {
-  const { settings, allDeposits, clearHistory, exportReport } = useDashboard();
+  const {
+    settings,
+    allDeposits,
+    clearHistory,
+    exportReport
+  } = useDashboard();
 
   const [resetModal, setResetModal] = useState(false);
 
@@ -29,7 +34,7 @@ export function ProfilePage() {
             Anonimowy Orzeł
           </h1>
           <span className="eyebrow muted text-[11px] font-mono tracking-wider uppercase text-[#727279]">
-            TWÓJ PROFIL
+            TWÓJ PROFIL W GRUPIE
           </span>
         </div>
       </div>
@@ -39,16 +44,16 @@ export function ProfilePage() {
         <div className="profile-stats grid grid-cols-2 gap-4 my-8">
           <div className="bg-[#f0f0f2] rounded p-6 sm:p-8 flex flex-col gap-2 min-w-0">
             <strong className="text-2xl sm:text-4xl font-semibold text-[#010120] [overflow-wrap:anywhere]">
-              {settings.privacy ? "—" : money(total)}
+              {settings.privacy ? '—' : money(total)}
             </strong>
             <span className="eyebrow text-[11px] font-mono tracking-wider uppercase text-[#727279]">
-              SUMA ZAPISÓW
+              SUMA ZAPISÓW · DEMO I ARCHIWUM
             </span>
           </div>
 
           <div className="bg-[#f0f0f2] rounded p-6 sm:p-8 flex flex-col gap-2 min-w-0">
             <strong className="text-2xl sm:text-4xl font-semibold text-[#010120] [overflow-wrap:anywhere]">
-              {settings.privacy ? "—" : allDeposits.length}
+              {settings.privacy ? '—' : allDeposits.length}
             </strong>
             <span className="eyebrow text-[11px] font-mono tracking-wider uppercase text-[#727279]">
               ZAPISÓW W HISTORII
@@ -58,18 +63,12 @@ export function ProfilePage() {
       </section>
 
       {settings.privacy && (
-        <p
-          className="preference-hint profile-privacy-hint p-4 bg-[#f4f3ff] rounded text-xs text-[#59536f] text-center my-4"
-          role="note"
-        >
+        <p className="preference-hint profile-privacy-hint p-4 bg-[#f4f3ff] rounded text-xs text-[#59536f] text-center my-4" role="note">
           Podsumowanie jest ukryte. Możesz je odsłonić w Preferencjach.
         </p>
       )}
 
-      <section
-        aria-label="Zarządzanie danymi profilu"
-        className="profile-actions flex flex-col gap-3 my-8"
-      >
+      <section aria-label="Zarządzanie danymi profilu" className="profile-actions flex flex-col gap-3 my-8">
         <h2 className="sr-only">Działania profilu</h2>
         <button
           type="button"
@@ -80,10 +79,19 @@ export function ProfilePage() {
           <span>EKSPORTUJ HISTORIĘ (.CSV)</span>
           <Icon name="download" size={18} />
         </button>
+
+        <button
+          type="button"
+          aria-label="Otwórz potwierdzenie usunięcia lokalnej historii"
+          className="outline w-full border border-[#ebebeb] bg-white text-[#010120] hover:bg-[#f6f6fa] rounded py-3.5 px-5 font-mono text-xs tracking-wider uppercase flex items-center justify-center cursor-pointer transition-all"
+          onClick={() => setResetModal(true)}
+        >
+          USUŃ LOKALNĄ HISTORIĘ
+        </button>
       </section>
 
       <p className="privacy-caption text-xs text-[#727279] flex items-center gap-2 mt-6">
-        <Icon name="shield" size={16} /> Kwotę dzienną ustala twórca grupy
+        <Icon name="shield" size={16} /> Kwotę dzienną ustala twórca grupy · demo bez rzeczywistych płatności.
       </p>
 
       <Modal
@@ -93,8 +101,8 @@ export function ProfilePage() {
         ariaLabel="Usuń zapisy"
       >
         <p className="text-xs leading-relaxed text-[#727279] mb-6">
-          Usuniesz własne zapisy ze wszystkich lokalnych grup. Możesz wcześniej
-          wyeksportować raport. Ta czynność nie wpływa na Twoje pieniądze.
+          Usuniesz własne zapisy ze wszystkich lokalnych grup. Możesz wcześniej wyeksportować raport.
+          Ta czynność nie wpływa na Twoje pieniądze.
         </p>
 
         <div className="flex flex-col gap-2.5">

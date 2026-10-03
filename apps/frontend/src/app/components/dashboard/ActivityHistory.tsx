@@ -1,8 +1,5 @@
-import {
-  useDashboard,
-  money,
-  dailyAmount,
-} from "../../context/DashboardContext";
+import React from 'react';
+import { useDashboard, money, dailyAmount } from '../../context/DashboardContext';
 
 export function ActivityHistory() {
   const { activeGroup } = useDashboard();
@@ -11,19 +8,19 @@ export function ActivityHistory() {
   return (
     <section
       id="subscription-history"
-      className="panel activity-card p-6 sm:p-7 border border-line rounded bg-white scroll-mt-6 transition-colors"
+      className="panel activity-card p-6 sm:p-7 border border-[#ebebeb] rounded bg-white scroll-mt-6 transition-colors"
     >
       <div className="card-top flex items-center justify-between mb-2">
-        <h2 className="text-lg font-semibold tracking-tight text-ink">
+        <h2 className="text-lg font-semibold tracking-tight text-[#010120]">
           Historia grupy
         </h2>
         <span className="eyebrow muted text-[9px] font-mono tracking-wider uppercase text-[#727279]">
-          ROZLICZENIA
+          ROZLICZENIA · DEMO
         </span>
       </div>
 
       <p className="activity-subtitle text-xs text-[#727279] mb-4">
-        Dzienna kwota: <strong>{money(rate)}</strong>
+        Dzienna kwota: {money(rate)}. Zapisy demo i archiwalne.
       </p>
 
       {activeGroup.deposits.length ? (
@@ -41,15 +38,14 @@ export function ActivityHistory() {
                 </span>
 
                 <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-                  <strong className="text-xs font-semibold text-ink">
-                    {deposit.kind ? "Symulacja" : "Zapis archiwalny"} ·{" "}
-                    {money(deposit.amount)}
+                  <strong className="text-xs font-semibold text-[#010120]">
+                    {deposit.kind ? 'Symulacja' : 'Zapis archiwalny'} · {money(deposit.amount)}
                   </strong>
-                  <p className="text-[11px] text-[#727279] m-0 wrap-anywhere">
-                    {deposit.note || "Wcześniejszy zapis oszczędności."}
+                  <p className="text-[11px] text-[#727279] m-0 [overflow-wrap:anywhere]">
+                    {deposit.note || 'Wcześniejszy zapis oszczędności.'}
                   </p>
                   <span className="text-[9px] font-mono text-[#89898f]">
-                    {new Date(deposit.date).toLocaleDateString("pl-PL")}
+                    {new Date(deposit.date).toLocaleDateString('pl-PL')}
                   </span>
                 </div>
               </div>
@@ -59,11 +55,11 @@ export function ActivityHistory() {
         <div className="activity-empty text-center py-6">
           <span className="text-3xl text-[#9990c4] block mb-2">✧</span>
           <h3 className="text-sm font-semibold text-[#010120] mb-1">
-            Wasza historia dopiero się zaczyna
+            Wasza historia dopiero się zaczyna.
           </h3>
           <p className="text-xs text-[#727279] leading-relaxed">
             Przetestuj dzisiejszy zapis {money(rate)}
-            <br />w „Szczegóły kwoty”
+            <br />w „Szczegóły kwoty”.
           </p>
         </div>
       )}
