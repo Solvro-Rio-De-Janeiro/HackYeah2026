@@ -1,37 +1,28 @@
 from uuid import UUID
 
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
 
-from group.models import GroupMemberBalance, UserGroup
+from group.models import Group
 
 
-class UserGroupRepository:
+class GroupRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_by_group_id(self, group_id: UUID) -> list[UserGroup]:
-        statement = (
-            select(UserGroup)
-            .where(UserGroup.group_id == group_id)
-            .options(
-                joinedload(UserGroup.user),
-                joinedload(UserGroup.group),
-                joinedload(UserGroup.balance),
-            )
-        )
-        result = await self.session.scalars(statement)
-        return list(result.unique().all())
+    async def create(self, group: Group) -> Group:
+        self.session.add(group)
+        await self.session.commit()
+        await self.session.refresh(group)
+        return group
 
-    async def clear_balances_for_memberships(
-        self, memberships: list[UserGroup]
-    ) -> list[GroupMemberBalance]:
-        balances = [
-            GroupMemberBalance(user_group_id=membership.id, balance=0)
-            for membership in memberships
-            if membership.balance is None
-        ]
-        self.session.add_all(balances)
-        await self.session.flush()
-        return balances
+    async def get_by_id(self, group_id: UUID) -> Group | None:
+        return await self.session.get(Group, group_id)
+
+    async def update(self, group: Group) -> Group:
+        await self.session.commit()
+        await self.session.refresh(group)
+        return group
+
+    async def delete(self, group: Group) -> None:
+        await self.session.delete(group)
+        await self.session.commit()
