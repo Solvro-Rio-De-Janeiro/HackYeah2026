@@ -2,7 +2,9 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from goals.router import router as goal_router
 from core.db_config import sessionmanager
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -13,6 +15,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+app.include_router(router=goal_router)
 
 
 @app.get("/health")
