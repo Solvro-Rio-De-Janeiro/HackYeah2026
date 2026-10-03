@@ -7,6 +7,7 @@ from auth.router import router as auth_router
 from goals.router import router as goal_router
 from user.router import router as user_router
 from core.db_config import sessionmanager
+import models  # noqa: F401 — register ORM models before mapper configuration
 
 
 @asynccontextmanager
