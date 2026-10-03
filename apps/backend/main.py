@@ -5,7 +5,9 @@ from fastapi import FastAPI
 import models  # noqa: F401
 from auth.router import router as auth_router
 from goals.router import router as goal_router
+from group.router import router as group_router
 from user.router import router as user_router
+from user_group.router import router as user_group_router
 from core.db_config import sessionmanager
 import models  # noqa: F401 — register ORM models before mapper configuration
 
@@ -22,6 +24,8 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(router=goal_router)
 app.include_router(router=user_router)
 app.include_router(router=auth_router)
+app.include_router(router=group_router)
+app.include_router(router=user_group_router)
 
 
 

@@ -7,14 +7,14 @@ from goals.models import (
     Goal,
     GoalPeriod,
 )
-from group.models import (
-    Group,
-    GroupMemberBalance,
-    UserGroup,
-)
+from group.models import Group
 from user.models import (
     User,
     UserRole,
+)
+from user_group.models import (
+    GroupMemberBalance,
+    UserGroup,
 )
 
 __all__ = [

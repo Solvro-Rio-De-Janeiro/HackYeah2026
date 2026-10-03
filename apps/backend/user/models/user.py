@@ -20,4 +20,6 @@ class User(Base):
     )
     password_hash: Mapped[str] = mapped_column(Text, nullable=False)
 
-    memberships: Mapped[list["UserGroup"]] = relationship(back_populates="user")
+    memberships: Mapped[list["UserGroup"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )

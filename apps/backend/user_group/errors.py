@@ -1,0 +1,2 @@
+class UserAlreadyInGroupError(Exception):
+    pass
