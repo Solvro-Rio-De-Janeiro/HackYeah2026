@@ -28,7 +28,6 @@ app.include_router(router=group_router)
 app.include_router(router=user_group_router)
 
 
-
 @app.get("/health")
 def health_check():
     return {"status": "ok"}

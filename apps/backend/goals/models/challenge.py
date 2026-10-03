@@ -29,4 +29,6 @@ class Challenge(Base):
 
     foundation: Mapped["Foundation"] = relationship(back_populates="challenges")
     group: Mapped["Group"] = relationship(back_populates="challenges")
-    goals: Mapped[list["Goal"]] = relationship(back_populates="challenge")
+    goal: Mapped["Goal"] = relationship(
+        back_populates="challenge", foreign_keys="Goal.challenge_id"
+    )

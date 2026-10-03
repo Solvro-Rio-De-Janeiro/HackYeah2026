@@ -18,8 +18,10 @@ class Goal(Base):
         Enum(GoalPeriod, name="goal_period"), nullable=False
     )
     challenge_id: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("challenge.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("challenge.id"), nullable=False, unique=True
     )
 
-    challenge: Mapped["Challenge"] = relationship(back_populates="goals")
+    challenge: Mapped["Challenge"] = relationship(
+        back_populates="goal", foreign_keys="Goal.challenge_id"
+    )
     gift_goal: Mapped["GiftGoal | None"] = relationship(back_populates="goal")
