@@ -33,7 +33,7 @@ class PayoutStatus(StrEnum):
 class Payout(Base):
     __tablename__ = "payout"
     __table_args__ = (
-        CheckConstraint("amount_pln > 0", name="ck_payout_amount_positive"),
+        CheckConstraint("amount_gr > 0", name="ck_payout_amount_positive"),
     )
 
     id: Mapped[UUID] = mapped_column(
@@ -56,26 +56,12 @@ class Payout(Base):
         nullable=False,
         default=PayoutStatus.PENDING,
     )
-    amount_pln: Mapped[int] = mapped_column(Integer, nullable=False)
-    challenge_id: Mapped[UUID] = mapped_column(
-        SQLUUID(as_uuid=True), ForeignKey("challenge.id"), nullable=False
+    amount_gr: Mapped[int] = mapped_column(Integer, nullable=False)
+    goal_id: Mapped[UUID] = mapped_column(
+        SQLUUID(as_uuid=True), ForeignKey("goal.id"), nullable=False
     )
-    goal_id: Mapped[UUID | None] = mapped_column(
-        SQLUUID(as_uuid=True), ForeignKey("goal.id"), nullable=True
-    )
-
-    user_group_id: Mapped[UUID | None] = mapped_column(
-        SQLUUID(as_uuid=True), ForeignKey("user_group.id"), nullable=True
-    )
-    foundation_id: Mapped[UUID | None] = mapped_column(
-        SQLUUID(as_uuid=True), ForeignKey("foundation.id"), nullable=True
-    )
-
-    recipient_user_id: Mapped[UUID | None] = mapped_column(
-        SQLUUID(as_uuid=True), ForeignKey("user.id"), nullable=True
-    )
-    stripe_destination_account_id: Mapped[str] = mapped_column(
-        String(255), nullable=False
+    user_group_id: Mapped[UUID] = mapped_column(
+        SQLUUID(as_uuid=True), ForeignKey("user_group.id"), nullable=False
     )
     stripe_transfer_id: Mapped[str | None] = mapped_column(
         String(255), nullable=True, unique=True
@@ -84,4 +70,3 @@ class Payout(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
-    paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

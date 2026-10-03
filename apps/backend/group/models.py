@@ -1,17 +1,13 @@
-from decimal import Decimal
 from uuid import uuid4
 
 from sqlalchemy import (
     UUID,
-    DateTime,
     ForeignKey,
     Integer,
-    Numeric,
     String,
     Text,
-    func,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, declarative_base, mapped_column, relationship
 
 from core.db_config import Base
 
@@ -47,15 +43,11 @@ class UserGroup(Base):
     group: Mapped[Group] = relationship(back_populates="memberships")
 
 
-class GroupMemberBalance(Base):
+ViewBase = declarative_base()
+
+
+class GroupMemberBalance(ViewBase):
     __tablename__ = "group_member_balance"
 
-    id: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("user_group.id"), primary_key=True
-    )
-    balance: Mapped[Decimal] = mapped_column(
-        Numeric(8, 2), nullable=False, default=0
-    )
-    updated_at: Mapped[DateTime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    balance: Mapped[int] = mapped_column(Integer, nullable=False)

@@ -33,6 +33,7 @@ class GoalPurchasePayoutRequest(BaseModel):
 class PayoutResponse(BaseModel):
     payout_id: UUID
     kind: PayoutKind
+    goal_id: UUID
     status: PayoutStatus
-    amount_pln: int
+    amount_gr: int
     stripe_transfer_id: str | None

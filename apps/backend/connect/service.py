@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from decimal import Decimal
 from uuid import UUID
 
 import stripe
@@ -13,7 +12,7 @@ from core.settings import settings
 from fastapi import HTTPException
 from fundation.models import Foundation
 from goals.models import Challenge, Goal
-from group.models import GroupMemberBalance, UserGroup
+from group.models import UserGroup
 from payments.models import Subscription, SubscriptionStatus
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -86,9 +85,10 @@ async def get_user_account_status(
 
 async def pay_out_breach(
     session: AsyncSession, request: BreachPayoutRequest
-) -> Payout:
-    """Send a member's held deposits to the challenge's foundation."""
+) -> list[Payout]:
+    """Send a member's held deposits to the challenge's foundation, per goal."""
     _require_stripe()
+    payouts: list[Payout] = []
     async with session.begin():
         membership = await session.get(UserGroup, request.user_group_id)
         if membership is None:
@@ -121,27 +121,34 @@ async def pay_out_breach(
                 .with_for_update(of=Subscription)
             )
         )
-        amount_pln = sum(subscription.collected_pln for subscription in subscriptions)
-        if amount_pln <= 0:
+        by_goal: dict[UUID, list[Subscription]] = {}
+        for subscription in subscriptions:
+            if subscription.collected_pln > 0:
+                by_goal.setdefault(subscription.goal_id, []).append(subscription)
+        if not by_goal:
             raise HTTPException(
                 status_code=409, detail="Member has no deposits to transfer"
             )
 
-        payout = Payout(
-            kind=PayoutKind.FOUNDATION_BREACH,
-            amount_pln=amount_pln,
-            challenge_id=challenge.id,
-            user_group_id=membership.id,
-            foundation_id=foundation.id,
-            stripe_destination_account_id=foundation.stripe_account_id,
-        )
-        if await _transfer(session, payout):
-            for subscription in subscriptions:
+        for goal_id, goal_subscriptions in by_goal.items():
+            payout = Payout(
+                kind=PayoutKind.FOUNDATION_BREACH,
+                amount_gr=sum(s.collected_net_gr for s in goal_subscriptions),
+                goal_id=goal_id,
+                user_group_id=membership.id,
+            )
+            payouts.append(payout)
+            if not await _transfer(
+                session, payout, foundation.stripe_account_id, challenge.id
+            ):
+                break
+            for subscription in goal_subscriptions:
                 await _release_subscription_deposit(session, subscription)
 
-    _raise_if_failed(payout)
+    for payout in payouts:
+        _raise_if_failed(payout)
     await _cancel_subscriptions(session, subscriptions)
-    return payout
+    return payouts
 
 
 async def pay_out_goal_purchase(
@@ -159,13 +166,13 @@ async def pay_out_goal_purchase(
         recipient = await session.get(User, request.recipient_user_id)
         if recipient is None:
             raise HTTPException(status_code=404, detail="Recipient not found")
-        is_member = await session.scalar(
+        membership_id = await session.scalar(
             select(UserGroup.id).where(
                 UserGroup.user_id == recipient.id,
                 UserGroup.group_id == challenge.group_id,
             )
         )
-        if is_member is None:
+        if membership_id is None:
             raise HTTPException(
                 status_code=403,
                 detail="Recipient is not a member of the goal's group",
@@ -175,9 +182,6 @@ async def pay_out_goal_purchase(
                 status_code=409,
                 detail="Recipient has no Stripe account; finish onboarding first",
             )
-        if goal.saldo <= 0:
-            raise HTTPException(status_code=409, detail="Goal has no funds")
-
         subscriptions = list(
             await session.scalars(
                 select(Subscription)
@@ -185,15 +189,17 @@ async def pay_out_goal_purchase(
                 .with_for_update()
             )
         )
+        amount_gr = sum(subscription.collected_net_gr for subscription in subscriptions)
+        if amount_gr <= 0:
+            raise HTTPException(status_code=409, detail="Goal has no funds")
+
         payout = Payout(
             kind=PayoutKind.GOAL_PURCHASE,
-            amount_pln=goal.saldo,
-            challenge_id=challenge.id,
+            amount_gr=amount_gr,
             goal_id=goal.id,
-            recipient_user_id=recipient.id,
-            stripe_destination_account_id=recipient.stripe_account_id,
+            user_group_id=membership_id,
         )
-        if await _transfer(session, payout):
+        if await _transfer(session, payout, recipient.stripe_account_id, challenge.id):
             for subscription in subscriptions:
                 await _release_subscription_deposit(session, subscription)
             goal.saldo = 0
@@ -306,17 +312,19 @@ async def _account_status(account_id: str | None) -> AccountStatusResponse:
     )
 
 
-async def _transfer(session: AsyncSession, payout: Payout) -> bool:
+async def _transfer(
+    session: AsyncSession, payout: Payout, destination: str, challenge_id: UUID
+) -> bool:
     """Create the Stripe transfer; records the outcome on the payout."""
     session.add(payout)
     await session.flush()
     try:
         transfer = await run_in_threadpool(
             stripe.Transfer.create,
-            amount=payout.amount_pln * 100,
+            amount=payout.amount_gr,
             currency="pln",
-            destination=payout.stripe_destination_account_id,
-            transfer_group=f"challenge-{payout.challenge_id}",
+            destination=destination,
+            transfer_group=f"challenge-{challenge_id}",
             metadata={"payout_id": str(payout.id), "kind": payout.kind.value},
             api_key=settings.stripe_secret_key,
             idempotency_key=f"payout-{payout.id}",
@@ -332,26 +340,18 @@ async def _transfer(session: AsyncSession, payout: Payout) -> bool:
 
     payout.stripe_transfer_id = transfer.id
     payout.status = PayoutStatus.PAID
-    payout.paid_at = datetime.now(timezone.utc)
     return True
 
 
 async def _release_subscription_deposit(
     session: AsyncSession, subscription: Subscription
 ) -> None:
-    """Remove a subscription's held deposits from the goal and member balance."""
-    amount_pln = subscription.collected_pln
-    if amount_pln <= 0:
-        return
+    """Remove a subscription's held deposits from the goal."""
     goal = await session.get(Goal, subscription.goal_id, with_for_update=True)
     if goal is not None:
-        goal.saldo = max(goal.saldo - amount_pln, 0)
-    balance = await session.get(
-        GroupMemberBalance, subscription.user_group_id, with_for_update=True
-    )
-    if balance is not None:
-        balance.balance = max(balance.balance - Decimal(amount_pln), Decimal(0))
+        goal.saldo = max(goal.saldo - subscription.collected_pln, 0)
     subscription.collected_pln = 0
+    subscription.collected_net_gr = 0
 
 
 def _raise_if_failed(payout: Payout) -> None:

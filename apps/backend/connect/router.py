@@ -53,11 +53,12 @@ async def user_status(user_id: UUID, session: DBSessionDep) -> AccountStatusResp
     return await get_user_account_status(session, user_id)
 
 
-@router.post("/payouts/breach", response_model=PayoutResponse)
+@router.post("/payouts/breach", response_model=list[PayoutResponse])
 async def breach_payout(
     payload: BreachPayoutRequest, session: DBSessionDep
-) -> PayoutResponse:
-    return _payout_response(await pay_out_breach(session, payload))
+) -> list[PayoutResponse]:
+    payouts = await pay_out_breach(session, payload)
+    return [_payout_response(payout) for payout in payouts]
 
 
 @router.post("/payouts/goal-purchase", response_model=PayoutResponse)
@@ -71,7 +72,8 @@ def _payout_response(payout: Payout) -> PayoutResponse:
     return PayoutResponse(
         payout_id=payout.id,
         kind=payout.kind,
+        goal_id=payout.goal_id,
         status=payout.status,
-        amount_pln=payout.amount_pln,
+        amount_gr=payout.amount_gr,
         stripe_transfer_id=payout.stripe_transfer_id,
     )

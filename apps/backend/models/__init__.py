@@ -15,7 +15,6 @@ from group.models import (
 )
 from payments.models import (
     Payment,
-    PaymentStatus,
     Subscription,
     SubscriptionInterval,
     SubscriptionStatus,
@@ -36,7 +35,6 @@ __all__ = [
     "Group",
     "GroupMemberBalance",
     "Payment",
-    "PaymentStatus",
     "Payout",
     "PayoutKind",
     "PayoutStatus",

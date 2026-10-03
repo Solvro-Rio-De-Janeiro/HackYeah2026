@@ -3,26 +3,15 @@ from core.db_config import DBSessionDep
 from core.settings import settings
 from fastapi import APIRouter, Header, HTTPException, Request
 from payments.schemas import (
-    CheckoutSessionResponse,
-    CreateCheckoutSessionRequest,
     CreateSubscriptionRequest,
     SubscriptionCheckoutResponse,
 )
 from payments.service import (
-    create_checkout_session,
     create_subscription_checkout,
     process_stripe_webhook,
 )
 
 router = APIRouter(tags=["payments"])
-
-
-@router.post("/checkout-session", response_model=CheckoutSessionResponse)
-async def create_checkout(
-    payload: CreateCheckoutSessionRequest, session: DBSessionDep
-) -> CheckoutSessionResponse:
-    payment, checkout_url = await create_checkout_session(session, payload)
-    return CheckoutSessionResponse(payment_id=payment.id, checkout_url=checkout_url)
 
 
 @router.post("/subscriptions", response_model=SubscriptionCheckoutResponse)
