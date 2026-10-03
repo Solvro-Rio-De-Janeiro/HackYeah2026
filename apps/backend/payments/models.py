@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import StrEnum
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from core.db_config import Base
 from sqlalchemy import (
@@ -31,17 +31,14 @@ class Payment(Base):
         CheckConstraint("amount_pln > 0", name="ck_payment_amount_positive"),
     )
 
-    id: Mapped[UUID] = mapped_column(
-        SQLUUID(as_uuid=True), primary_key=True, default=uuid4
+    user_group_id: Mapped[UUID | None] = mapped_column(
+        SQLUUID(as_uuid=True), nullable=True
     )
-    user_id: Mapped[UUID | None] = mapped_column(
-        SQLUUID(as_uuid=True), ForeignKey("user.id"), nullable=True
+    id: Mapped[UUID] = mapped_column(
+        SQLUUID(as_uuid=True), ForeignKey("user_group.id"), primary_key=True
     )
     challenge_id: Mapped[UUID] = mapped_column(
         SQLUUID(as_uuid=True), ForeignKey("challenge.id"), nullable=False
-    )
-    goal_id: Mapped[UUID] = mapped_column(
-        SQLUUID(as_uuid=True), ForeignKey("goal.id"), nullable=False
     )
     amount_pln: Mapped[int] = mapped_column(Integer, nullable=False)
     currency: Mapped[str] = mapped_column(

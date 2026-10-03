@@ -5,6 +5,7 @@ import stripe
 from core.settings import settings
 from fastapi import HTTPException
 from goals.models import Challenge, ChallengeState, GiftGoal, Goal
+from group.models import UserGroup
 from payments.models import Payment, PaymentStatus
 from payments.schemas import CreateCheckoutSessionRequest
 from sqlalchemy import select
@@ -29,6 +30,15 @@ async def create_checkout_session(
         if challenge is None or challenge.state != ChallengeState.ACTIVE:
             raise HTTPException(status_code=409, detail="Challenge is not active")
 
+        membership = await session.get(UserGroup, request.user_group_id)
+        if membership is None:
+            raise HTTPException(status_code=404, detail="Group membership not found")
+        if membership.group_id != challenge.group_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Group membership does not belong to the goal's challenge",
+            )
+
         gift_goal = await session.get(GiftGoal, goal.id)
         if gift_goal is not None:
             if request.amount_pln is not None:
@@ -50,9 +60,16 @@ async def create_checkout_session(
         if amount_pln <= 0:
             raise HTTPException(status_code=409, detail="Goal has no valid price")
 
+        if await session.get(Payment, membership.id) is not None:
+            raise HTTPException(
+                status_code=409,
+                detail="Payment already exists for this group membership",
+            )
+
         payment = Payment(
+            id=membership.id,
+            user_group_id=membership.id,
             challenge_id=goal.challenge_id,
-            goal_id=goal.id,
             amount_pln=amount_pln,
             currency="pln",
             status=PaymentStatus.PENDING,
@@ -85,6 +102,7 @@ async def create_checkout_session(
             metadata={
                 "payment_id": str(payment_id),
                 "goal_id": str(request.goal_id),
+                "user_group_id": str(membership.id),
                 "challenge_id": str(challenge_id),
             },
             api_key=settings.stripe_secret_key,
@@ -163,8 +181,14 @@ async def process_checkout_webhook(
                 payment.status = PaymentStatus.FAILED
                 return
 
-            goal = await session.get(Goal, payment.goal_id, with_for_update=True)
-            if goal is None:
+            try:
+                goal_id = UUID(metadata.get("goal_id"))
+            except (TypeError, ValueError):
+                payment.status = PaymentStatus.FAILED
+                return
+
+            goal = await session.get(Goal, goal_id, with_for_update=True)
+            if goal is None or goal.challenge_id != payment.challenge_id:
                 payment.status = PaymentStatus.FAILED
                 return
 
