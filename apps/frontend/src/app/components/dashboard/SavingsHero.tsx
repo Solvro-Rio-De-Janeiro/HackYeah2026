@@ -131,11 +131,7 @@ export function SavingsHero({ onShowGoal }: SavingsHeroProps) {
               role="timer"
               aria-label={recordedToday ? `Wpłacono na dziś, następna wpłata za ${timeRemaining}` : `Czeka na wpłatę, pozostało ${timeRemaining}`}
             >
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${
-                  recordedToday ? 'bg-[#85ebcf]' : 'bg-[#bdbbff]'
-                }`}
-              />
+
               <span>
                 {recordedToday ? `WPŁACONO · KOLEJNA ZA ${timeRemaining}` : `CZEKA NA WPŁATĘ · ${timeRemaining}`}
               </span>
