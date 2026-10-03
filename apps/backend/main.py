@@ -1,9 +1,10 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
-
-from goals.router import router as goal_router
+import models  # noqa: F401
 from core.db_config import sessionmanager
+from fastapi import FastAPI
+from goals.router import router as goal_router
+from payments.router import router as payment_router
 
 
 @asynccontextmanager
@@ -16,6 +17,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(router=goal_router)
+app.include_router(payment_router, prefix="/api/payments")
 
 
 @app.get("/health")

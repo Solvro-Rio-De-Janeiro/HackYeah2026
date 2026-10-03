@@ -12,6 +12,7 @@ from group.models import (
     GroupMemberBalance,
     UserGroup,
 )
+from payments.models import Payment, PaymentStatus
 from user.models import (
     User,
     UserRole,
@@ -27,6 +28,8 @@ __all__ = [
     "GoalPeriod",
     "Group",
     "GroupMemberBalance",
+    "Payment",
+    "PaymentStatus",
     "User",
     "UserGroup",
     "UserRole",

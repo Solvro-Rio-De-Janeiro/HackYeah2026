@@ -6,6 +6,9 @@ dist
 coverage
 .venv
 venv
+**/.venv
+**/venv
+apps/backend/.venv
 __pycache__
 .pytest_cache
 .env

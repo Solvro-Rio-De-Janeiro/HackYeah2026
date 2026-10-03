@@ -1,14 +1,16 @@
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-from alembic import context
-from core.settings import settings
-from core.db_config import Base
 import models  # noqa: F401 — register ORM tables on Base.metadata
+from alembic import context
+from core.db_config import Base
+from core.settings import settings
+from sqlalchemy import engine_from_config, make_url, pool
 
 config = context.config
+database_url = make_url(settings.connection_string)
+if database_url.drivername == "postgresql+asyncpg":
+    database_url = database_url.set(drivername="postgresql+psycopg")
 config.set_main_option(
     "sqlalchemy.url",
-    settings.connection_string,
+    database_url.render_as_string(hide_password=False).replace("%", "%%"),
 )
 target_metadata = Base.metadata
 
