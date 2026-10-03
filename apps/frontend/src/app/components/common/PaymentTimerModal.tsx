@@ -304,9 +304,8 @@ export function PaymentTimerModal({
           <div className="bg-[#f9fafb] dark:bg-white/[0.03] border border-[#ebebeb] dark:border-white/10 rounded-xl p-4 mb-5">
             {/* Pulsing Banking Radar */}
             <div className="flex items-center gap-3 mb-3">
-              <span className="relative flex h-3 w-3 shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#7472d5] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-[#010120] dark:bg-[#8ee9ee]"></span>
+              <span className="relative flex h-2.5 w-2.5 shrink-0">
+                <span className="inline-flex rounded-full h-2.5 w-2.5 bg-[#010120] dark:bg-[#8ee9ee]"></span>
               </span>
               <p className="text-xs font-semibold text-[#010120] dark:text-white m-0">
                 {method === 'blik'

@@ -133,7 +133,7 @@ export function SavingsHero({ onShowGoal }: SavingsHeroProps) {
             >
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
-                  recordedToday ? 'bg-[#85ebcf]' : 'bg-[#bdbbff] animate-ping'
+                  recordedToday ? 'bg-[#85ebcf]' : 'bg-[#bdbbff]'
                 }`}
               />
               <span>

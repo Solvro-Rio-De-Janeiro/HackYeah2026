@@ -65,7 +65,7 @@ export function GoalCard({ onShowGoal, onOpenInvite }: GoalCardProps) {
 
         <button
           type="button"
-          className="outline border border-[#ebebeb] bg-white text-[#010120] hover:bg-[#f6f6fa] rounded px-4 py-2 text-xs font-mono tracking-wider uppercase cursor-pointer transition-all"
+          className="outline"
           onClick={onOpenInvite}
         >
           ZAPROŚ DO GRUPY ↗
