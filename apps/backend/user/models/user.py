@@ -1,20 +1,10 @@
-from enum import StrEnum
 from uuid import uuid4
 
-from sqlalchemy import (
-    Enum,
-    String,
-    Text,
-    UUID,
-)
+from sqlalchemy import UUID, Enum, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.db_config import Base
-
-
-class UserRole(StrEnum):
-    USER = "user"
-    ADMIN = "admin"
+from .user_role import UserRole
 
 
 class User(Base):
@@ -33,4 +23,6 @@ class User(Base):
         String(255), nullable=True, unique=True
     )
 
-    memberships: Mapped[list["UserGroup"]] = relationship(back_populates="user")
+    memberships: Mapped[list["UserGroup"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )

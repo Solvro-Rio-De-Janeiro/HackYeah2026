@@ -14,8 +14,6 @@ class Challenge(Base):
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid4
     )
-    name: Mapped[str] = mapped_column(Text, nullable=False)
-    description: Mapped[str] = mapped_column(Text, nullable=False)
     foundation_id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("foundation.id"), nullable=False
     )
@@ -31,4 +29,6 @@ class Challenge(Base):
 
     foundation: Mapped["Foundation"] = relationship(back_populates="challenges")
     group: Mapped["Group"] = relationship(back_populates="challenges")
-    goals: Mapped[list["Goal"]] = relationship(back_populates="challenge")
+    goal: Mapped["Goal"] = relationship(
+        back_populates="challenge", foreign_keys="Goal.challenge_id"
+    )

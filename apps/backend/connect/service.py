@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from decimal import Decimal
 from uuid import UUID
 
 import stripe
@@ -12,7 +13,7 @@ from core.settings import settings
 from fastapi import HTTPException
 from fundation.models import Foundation
 from goals.models import Challenge, Goal
-from group.models import UserGroup
+from user_group.models import GroupMemberBalance, UserGroup
 from payments.models import Subscription, SubscriptionStatus
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -346,10 +347,20 @@ async def _transfer(
 async def _release_subscription_deposit(
     session: AsyncSession, subscription: Subscription
 ) -> None:
-    """Remove a subscription's held deposits from the goal."""
+    """Remove a subscription's held deposits from the goal and member balance."""
     goal = await session.get(Goal, subscription.goal_id, with_for_update=True)
     if goal is not None:
         goal.saldo = max(goal.saldo - subscription.collected_pln, 0)
+    balance = await session.scalar(
+        select(GroupMemberBalance)
+        .where(GroupMemberBalance.user_group_id == subscription.user_group_id)
+        .with_for_update()
+    )
+    if balance is not None:
+        balance.balance = max(
+            balance.balance - Decimal(subscription.collected_pln), Decimal(0)
+        )
+        balance.updated_at = datetime.now(timezone.utc)
     subscription.collected_pln = 0
     subscription.collected_net_gr = 0
 

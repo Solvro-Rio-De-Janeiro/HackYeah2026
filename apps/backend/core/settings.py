@@ -12,6 +12,12 @@ class Settings(BaseSettings):
     frontend_url: str = Field(
         default="http://localhost:4200", validation_alias="FRONTEND_URL"
     )
+    jwt_secret_key: str = Field(
+        default="dev-secret-change-me", validation_alias="JWT_SECRET_KEY"
+    )
+    jwt_access_token_expires_minutes: int = Field(
+        default=60, validation_alias="JWT_ACCESS_TOKEN_EXPIRES_MINUTES"
+    )
 
 
 settings = Settings()

@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
@@ -6,7 +7,7 @@ import stripe
 from core.settings import settings
 from fastapi import HTTPException
 from goals.models import Challenge, ChallengeState, Goal, GoalPeriod
-from group.models import UserGroup
+from user_group.models import GroupMemberBalance, UserGroup
 from payments.models import (
     Payment,
     Subscription,
@@ -73,7 +74,7 @@ async def create_subscription_checkout(
         await session.flush()
         subscription_id = subscription.id
         interval = subscription.interval
-        product_name = goal.name
+        product_name = f"Wspólny cel ({goal.period.value.lower()})"
 
     metadata = {
         "subscription_id": str(subscription_id),
@@ -207,6 +208,22 @@ async def _process_invoice_paid(session: AsyncSession, invoice: dict[str, Any]) 
             subscription.status = SubscriptionStatus.ACTIVE
         if subscription.stripe_subscription_id is None:
             subscription.stripe_subscription_id = details.get("subscription")
+
+        balance = await session.scalar(
+            select(GroupMemberBalance)
+            .where(GroupMemberBalance.user_group_id == subscription.user_group_id)
+            .with_for_update()
+        )
+        if balance is None:
+            session.add(
+                GroupMemberBalance(
+                    user_group_id=subscription.user_group_id,
+                    balance=Decimal(amount_pln),
+                )
+            )
+        else:
+            balance.balance += Decimal(amount_pln)
+            balance.updated_at = datetime.now(timezone.utc)
 
 
 async def _process_subscription_deleted(

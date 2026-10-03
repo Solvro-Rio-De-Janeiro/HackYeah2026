@@ -1,17 +1,23 @@
 from uuid import UUID
 
-from goals.schemas import CreateGoalRequest
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, status
+
+from core.db_config import DBSessionDep
+from goals.handlers.create_goal_handler import CreateGoalHandler
+from goals.handlers.finish_goal_handler import FinishGoalHandler
+from goals.schemas import CreateGoalRequest, FinishGoalRequest, GoalResponse
 
 router = APIRouter()
 
 
-@router.post("/goal")
-def create_goal(request: CreateGoalRequest):
-
-    pass
+@router.post("/goal", response_model=GoalResponse, status_code=status.HTTP_201_CREATED)
+async def create_goal(request: CreateGoalRequest, session: DBSessionDep) -> GoalResponse:
+    handler = CreateGoalHandler(session)
+    goal = await handler.handle(request)
+    return GoalResponse.model_validate(goal)
 
 
 @router.patch("/goal/{id}")
-def finish_goal(id: UUID):
-    pass
+async def finish_goal(id: UUID, session: DBSessionDep):
+    handler = FinishGoalHandler(session)
+    await handler.handle(FinishGoalRequest(id=id))

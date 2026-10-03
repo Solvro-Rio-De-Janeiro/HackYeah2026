@@ -4,7 +4,6 @@ from sqlalchemy import UUID, BigInteger, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.db_config import Base
-from goals.models import Challenge
 
 
 class Foundation(Base):
@@ -18,4 +17,4 @@ class Foundation(Base):
         String(255), nullable=True, unique=True
     )
 
-    challenges: Mapped[list[Challenge]] = relationship(back_populates="foundation")
+    challenges: Mapped[list["Challenge"]] = relationship(back_populates="foundation")
