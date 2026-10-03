@@ -1,6 +1,5 @@
-import React from "react";
-import { useDashboard, money } from "../../context/DashboardContext";
-import { PlusCircle } from "lucide-react";
+import React from 'react';
+import { useDashboard, money } from '../../context/DashboardContext';
 
 interface MembersListProps {
   onOpenInvite: () => void;
@@ -16,7 +15,7 @@ export function MembersList({ onOpenInvite }: MembersListProps) {
           Wasza ekipa
         </h2>
         <span className="eyebrow muted text-[9px] font-mono tracking-wider uppercase text-[#727279]">
-          {members.length} {members.length === 1 ? "OSOBA" : "OSOBY"}
+          {members.length} {members.length === 1 ? 'OSOBA' : 'OSOBY'}
         </span>
       </div>
 
@@ -44,7 +43,7 @@ export function MembersList({ onOpenInvite }: MembersListProps) {
               <span className="text-[10px] text-[#727279]">
                 {index === 0
                   ? `${activeGroup.deposits.length} zapisów w historii`
-                  : "Przykładowy członek grupy"}
+                  : 'Przykładowy członek grupy'}
               </span>
             </div>
 
@@ -57,10 +56,10 @@ export function MembersList({ onOpenInvite }: MembersListProps) {
 
       <button
         type="button"
-        className="items-center gap-2 flex border-0 bg-transparent text-left text-xs text-[#294f53] hover:underline cursor-pointer mt-4 p-0"
+        className="text-button invite-link border-0 bg-transparent text-left text-xs text-[#294f53] hover:underline cursor-pointer mt-4 p-0 block"
         onClick={onOpenInvite}
       >
-        <PlusCircle className="size-4" /> Zaproś do grupy
+        ＋ Miejsce dla kogoś bliskiego. Zaproś do grupy.
       </button>
     </section>
   );

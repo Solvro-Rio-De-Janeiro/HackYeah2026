@@ -26,7 +26,7 @@ export function LoginPage() {
   async function onSubmit(formData: LoginFormData) {
     const API_URL = import.meta.env.VITE_API_URL || "";
     setServerError(null);
-    const { email, password, rememberMe } = formData;
+    const { email, password } = formData;
 
     try {
       const response = await fetch(`${API_URL}/api/auth/login`, {
@@ -56,18 +56,18 @@ export function LoginPage() {
   return (
     <section
       aria-labelledby="login-title"
-      className="w-full flex items-center justify-center"
+      className="w-full flex items-center justify-center my-4"
     >
-      <div className="relative w-full max-w-md p-6 sm:p-9 border border-white/10 rounded bg-white shadow-[0_16px_36px_rgba(0,0,0,0.35)]">
+      <div className="auth-card relative w-full max-w-md p-6 sm:p-9 border border-[#e5e5eb] rounded-2xl bg-white shadow-[0_10px_35px_rgba(0,0,0,0.05)] transition-all">
         <div
-          className="grid grid-cols-2 bg-[#f1f2f5] rounded p-1 mb-6"
+          className="auth-tabs grid grid-cols-2 bg-[#f4f4f7] rounded-lg p-1 mb-6 border border-[#e5e5ea]"
           role="tablist"
         >
           <Link
             to="/signup"
             role="tab"
             aria-selected={false}
-            className="py-2 rounded text-xs font-mono font-medium tracking-wide uppercase transition-all duration-150 text-center bg-transparent text-zinc-500 hover:text-zinc-800 no-underline"
+            className="auth-tab-inactive py-2 rounded-md text-xs font-mono font-medium tracking-wide uppercase transition-all duration-150 text-center bg-transparent text-slate-500 hover:text-black no-underline"
           >
             Create Account
           </Link>
@@ -75,7 +75,7 @@ export function LoginPage() {
             to="/login"
             role="tab"
             aria-selected={true}
-            className="py-2 rounded text-xs font-mono font-medium tracking-wide uppercase transition-all duration-150 text-center bg-white text-black shadow-sm no-underline"
+            className="auth-tab-active py-2 rounded-md text-xs font-mono font-semibold tracking-wide uppercase transition-all duration-150 text-center bg-white text-[#010120] shadow-sm no-underline"
           >
             Log In
           </Link>
@@ -87,15 +87,15 @@ export function LoginPage() {
           </p>
           <h2
             id="login-title"
-            className="m-0 mb-1 text-2xl font-semibold tracking-tight text-black"
+            className="m-0 mb-1 text-2xl font-bold tracking-tight text-[#010120] dark:text-white"
           >
             Welcome back
           </h2>
-          <p className="m-0 text-[#777781] text-sm tracking-tight">
+          <p className="m-0 text-[#777781] dark:text-[#a0a0ab] text-sm tracking-tight">
             Need a private account?{" "}
             <Link
               to="/signup"
-              className="p-0 border-0 bg-transparent text-black font-semibold underline underline-offset-4 hover:text-blue-600"
+              className="p-0 border-0 bg-transparent text-[#010120] dark:text-white font-semibold underline underline-offset-4 hover:text-[#7472d5] dark:hover:text-[#bdbbff]"
             >
               Sign up
             </Link>
@@ -111,7 +111,7 @@ export function LoginPage() {
 
           <div className="grid gap-3.5">
             <label className="grid gap-1.5">
-              <span className="text-slate-500 text-[10px] font-mono font-medium tracking-wider uppercase">
+              <span className="text-slate-500 dark:text-slate-400 text-[10px] font-mono font-medium tracking-wider uppercase">
                 EMAIL ADDRESS
               </span>
               <input
@@ -119,22 +119,22 @@ export function LoginPage() {
                 type="email"
                 placeholder="name@domain.com"
                 autoComplete="email"
-                className={`w-full h-11 px-3.5 border rounded bg-white text-black text-sm tracking-tight outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-[#010120]/10 transition-all duration-150 ${
+                className={`w-full h-11 px-3.5 border rounded-lg bg-white text-black dark:bg-[#161622] dark:text-white text-sm tracking-tight outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-[#010120]/10 transition-all duration-150 ${
                   errors.email
                     ? "border-red-500"
-                    : "border-[#e9e9eb] focus:border-slate-500"
+                    : "border-[#e5e5eb] dark:border-white/10 focus:border-slate-500"
                 }`}
                 disabled={isSubmitting}
               />
               {errors.email && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="text-red-500 text-xs mt-1 m-0">
                   {errors.email.message}
                 </p>
               )}
             </label>
 
             <label className="grid gap-1.5">
-              <span className="text-slate-500 text-[10px] font-mono font-medium tracking-wider uppercase">
+              <span className="text-slate-500 dark:text-slate-400 text-[10px] font-mono font-medium tracking-wider uppercase">
                 PASSWORD
               </span>
 
@@ -146,7 +146,7 @@ export function LoginPage() {
                 placeholder="Enter password"
               />
               {errors.password && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="text-red-500 text-xs mt-1 m-0">
                   {errors.password.message}
                 </p>
               )}
@@ -154,18 +154,18 @@ export function LoginPage() {
           </div>
 
           <div className="flex justify-between items-center my-3 text-xs">
-            <label className="flex items-center gap-2 cursor-pointer text-slate-500">
+            <label className="flex items-center gap-2 cursor-pointer text-slate-600 dark:text-slate-400">
               <input
                 {...register("rememberMe")}
                 type="checkbox"
-                className="w-4 h-4 rounded border border-slate-300 accent-black cursor-pointer"
+                className="w-4 h-4 rounded border border-slate-300 accent-[#010120] cursor-pointer"
                 disabled={isSubmitting}
               />
               <span>Remember me</span>
             </label>
             <Link
               to="/forgot-password"
-              className="text-slate-500 hover:text-black hover:underline"
+              className="text-slate-500 dark:text-slate-400 hover:text-[#010120] dark:hover:text-white hover:underline"
             >
               Forgot password?
             </Link>
@@ -174,7 +174,7 @@ export function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="group w-full h-12 flex items-center justify-center gap-2 border border-black rounded bg-black hover:bg-neutral-800 active:translate-y-0 text-white font-mono text-xs font-medium tracking-wider uppercase shadow-md transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lg cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed mt-4"
+            className="auth-submit-btn group w-full h-12 flex items-center justify-center gap-2 border border-black rounded-lg bg-black text-white hover:bg-neutral-800 active:translate-y-0 font-mono text-xs font-semibold tracking-wider uppercase shadow-md transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lg cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed mt-4"
           >
             {isSubmitting ? (
               <span>AUTHENTICATING...</span>

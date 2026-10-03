@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from './app';
 
@@ -76,4 +76,61 @@ describe('App', () => {
     fireEvent.click(toggleButtons[0]);
     expect(screen.getByLabelText(/Hide password/i)).toBeTruthy();
   });
+
+  it('should render Stripe payment method section and allow switching methods', () => {
+    render(
+      <MemoryRouter initialEntries={['/signup']}>
+        <App />
+      </MemoryRouter>
+    );
+    expect(screen.getByText('PAYMENT METHOD')).toBeTruthy();
+    expect(screen.getByText('Stripe Secure')).toBeTruthy();
+    expect(screen.getByPlaceholderText('4242 •••• •••• 4242')).toBeTruthy();
+
+    // Switch to BLIK
+    const blikRadio = screen.getByRole('radio', { name: /BLIK/i });
+    act(() => {
+      fireEvent.click(blikRadio);
+    });
+    expect(screen.getByPlaceholderText('123 456')).toBeTruthy();
+
+    // Switch back to Card
+    const cardRadio = screen.getByRole('radio', { name: /Card/i });
+    act(() => {
+      fireEvent.click(cardRadio);
+    });
+
+    // Test autofill test card
+    const autofillBtn = screen.getByRole('button', { name: /Use Stripe test card/i });
+    act(() => {
+      fireEvent.click(autofillBtn);
+    });
+
+    const cardInput = screen.getByPlaceholderText('4242 •••• •••• 4242') as HTMLInputElement;
+    expect(cardInput.value).toBe('4242 4242 4242 4242');
+  });
+
+  it('should render inline payment waiting timer and allow depositing directly', async () => {
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    // Verify inline timer waiting for deposit is visible on dashboard
+    expect(screen.getAllByRole('timer').length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/CZEKA NA WPŁATĘ/i).length).toBeGreaterThan(0);
+
+    // Find and click the quick deposit button
+    const depositBtn = screen.getByRole('button', { name: /WPŁAĆ/i });
+    expect(depositBtn).toBeTruthy();
+
+    act(() => {
+      fireEvent.click(depositBtn);
+    });
+
+    // Check that payment is recorded and timer updates
+    expect(screen.getAllByText(/WPŁATA ZAKSIĘGOWANA/i).length).toBeGreaterThan(0);
+  });
 });
+

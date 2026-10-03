@@ -8,6 +8,7 @@ import {
 } from "../schemas/register-form-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { PaymentMethodSection } from "../components/payment-method-section";
 
 export function SignUpPage() {
   const navigate = useNavigate();
@@ -16,6 +17,8 @@ export function SignUpPage() {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerFormSchema),
@@ -25,6 +28,13 @@ export function SignUpPage() {
       repeatPassword: "",
       username: "",
       termsAccepted: false,
+      paymentMethod: "card",
+      cardNumber: "",
+      cardExpiry: "",
+      cardCvc: "",
+      cardholderName: "",
+      postalCode: "",
+      blikCode: "",
     },
   });
 
@@ -66,18 +76,18 @@ export function SignUpPage() {
   return (
     <section
       aria-labelledby="signup-title"
-      className="w-full flex items-center justify-center"
+      className="w-full flex items-center justify-center my-4"
     >
-      <div className="relative w-full max-w-md p-6 sm:p-9 border border-white/10 rounded bg-white shadow-[0_16px_36px_rgba(0,0,0,0.35)]">
+      <div className="auth-card relative w-full max-w-lg p-6 sm:p-9 border border-[#e5e5eb] rounded-2xl bg-white shadow-[0_10px_35px_rgba(0,0,0,0.05)] transition-all">
         <div
-          className="grid grid-cols-2 bg-[#f1f2f5] rounded p-1 mb-6"
+          className="auth-tabs grid grid-cols-2 bg-[#f4f4f7] rounded-lg p-1 mb-6 border border-[#e5e5ea]"
           role="tablist"
         >
           <Link
             to="/signup"
             role="tab"
             aria-selected={true}
-            className="py-2 rounded text-xs font-mono font-medium tracking-wide uppercase transition-all duration-150 text-center bg-white text-black shadow-sm no-underline"
+            className="auth-tab-active py-2 rounded-md text-xs font-mono font-semibold tracking-wide uppercase transition-all duration-150 text-center bg-white text-[#010120] shadow-sm no-underline"
           >
             Create Account
           </Link>
@@ -85,7 +95,7 @@ export function SignUpPage() {
             to="/login"
             role="tab"
             aria-selected={false}
-            className="py-2 rounded text-xs font-mono font-medium tracking-wide uppercase transition-all duration-150 text-center bg-transparent text-zinc-500 hover:text-zinc-800 no-underline"
+            className="auth-tab-inactive py-2 rounded-md text-xs font-mono font-medium tracking-wide uppercase transition-all duration-150 text-center bg-transparent text-slate-500 hover:text-black no-underline"
           >
             Log In
           </Link>
@@ -97,15 +107,15 @@ export function SignUpPage() {
           </p>
           <h2
             id="signup-title"
-            className="m-0 mb-1 text-2xl font-semibold tracking-tight text-black"
+            className="m-0 mb-1 text-2xl font-semibold tracking-tight text-black dark:text-white"
           >
             Create an account
           </h2>
-          <p className="m-0 text-[#777781] text-sm tracking-tight">
+          <p className="m-0 text-[#777781] dark:text-[#a0a0ab] text-sm tracking-tight">
             Already have a profile?{" "}
             <Link
               to="/login"
-              className="p-0 border-0 bg-transparent text-black font-semibold underline underline-offset-4 hover:text-blue-600"
+              className="p-0 border-0 bg-transparent text-black dark:text-white font-semibold underline underline-offset-4 hover:text-blue-600 dark:hover:text-blue-400"
             >
               Log in
             </Link>
@@ -121,7 +131,7 @@ export function SignUpPage() {
 
           <div className="grid gap-3.5">
             <label className="grid gap-1.5">
-              <span className="text-slate-500 text-[10px] font-mono font-medium tracking-wider uppercase">
+              <span className="text-slate-500 dark:text-slate-400 text-[10px] font-mono font-medium tracking-wider uppercase">
                 EMAIL ADDRESS
               </span>
               <input
@@ -130,22 +140,22 @@ export function SignUpPage() {
                 disabled={isSubmitting}
                 placeholder="name@domain.com"
                 autoComplete="email"
-                className={`w-full h-11 px-3.5 border rounded bg-white text-black text-sm tracking-tight outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-[#010120]/10 transition-all duration-150 ${
+                className={`w-full h-11 px-3.5 border rounded bg-white text-black dark:bg-[#161622] dark:text-white text-sm tracking-tight outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-[#010120]/10 transition-all duration-150 ${
                   errors.email
                     ? "border-red-500"
-                    : "border-[#e9e9eb] focus:border-slate-500"
+                    : "border-[#e9e9eb] dark:border-white/10 focus:border-slate-500"
                 }`}
               />
 
               {errors.email && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="text-red-500 text-xs mt-1 m-0">
                   {errors.email.message}
                 </p>
               )}
             </label>
 
             <label className="grid gap-1.5">
-              <span className="text-slate-500 text-[10px] font-mono font-medium tracking-wider uppercase">
+              <span className="text-slate-500 dark:text-slate-400 text-[10px] font-mono font-medium tracking-wider uppercase">
                 PASSWORD
               </span>
               <PasswordInput
@@ -156,14 +166,14 @@ export function SignUpPage() {
                 autoComplete="new-password"
               />
               {errors.password && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="text-red-500 text-xs mt-1 m-0">
                   {errors.password.message}
                 </p>
               )}
             </label>
 
             <label className="grid gap-1.5">
-              <span className="text-slate-500 text-[10px] font-mono font-medium tracking-wider uppercase">
+              <span className="text-slate-500 dark:text-slate-400 text-[10px] font-mono font-medium tracking-wider uppercase">
                 REPEAT PASSWORD
               </span>
               <PasswordInput
@@ -174,14 +184,14 @@ export function SignUpPage() {
                 autoComplete="new-password"
               />
               {errors.repeatPassword && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="text-red-500 text-xs mt-1 m-0">
                   {errors.repeatPassword.message}
                 </p>
               )}
             </label>
 
             <label className="grid gap-1.5">
-              <span className="text-slate-500 text-[10px] font-mono font-medium tracking-wider uppercase">
+              <span className="text-slate-500 dark:text-slate-400 text-[10px] font-mono font-medium tracking-wider uppercase">
                 ANONYMOUS ALIAS{" "}
                 <em className="not-italic opacity-70">(COMMUNITY VISIBLE)</em>
               </span>
@@ -191,39 +201,48 @@ export function SignUpPage() {
                 placeholder="e.g. Phoenix2026"
                 disabled={isSubmitting}
                 autoComplete="username"
-                className={`w-full h-11 px-3.5 border rounded bg-white text-black text-sm tracking-tight outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-[#010120]/10 transition-all duration-150" ${
+                className={`w-full h-11 px-3.5 border rounded bg-white text-black dark:bg-[#161622] dark:text-white text-sm tracking-tight outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-[#010120]/10 transition-all duration-150 ${
                   errors.username
                     ? "border-red-500"
-                    : "border-[#e9e9eb] focus:border-slate-500"
+                    : "border-[#e9e9eb] dark:border-white/10 focus:border-slate-500"
                 }`}
               />
 
               {errors.username && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="text-red-500 text-xs mt-1 m-0">
                   {errors.username.message}
                 </p>
               )}
             </label>
           </div>
 
-          <label className="my-4 text-xs leading-relaxed text-[#777781] cursor-pointer">
+          {/* Payment Method Section (Stripe integration) */}
+          <PaymentMethodSection
+            register={register}
+            errors={errors}
+            setValue={setValue}
+            watch={watch}
+            disabled={isSubmitting}
+          />
+
+          <label className="my-3 text-xs leading-relaxed text-[#010120] cursor-pointer">
             <div className="flex items-start gap-2 w-full">
               <input
                 {...register("termsAccepted")}
                 type="checkbox"
                 disabled={isSubmitting}
-                className={`size-4 mt-0.5 rounded border accent-black cursor-pointer ${
-                  errors.username
+                className={`size-4 mt-0.5 rounded border accent-[#010120] cursor-pointer ${
+                  errors.termsAccepted
                     ? "outline-2 outline-red-500 ring-2 ring-red-500/20"
                     : "border-slate-300"
                 }`}
               />
-              <span>
+              <span className="text-[#010120] font-normal leading-relaxed">
                 I accept the{" "}
                 <a
                   href="#terms"
                   onClick={(e) => e.preventDefault()}
-                  className="text-black underline underline-offset-2"
+                  className="text-[#010120] font-bold underline underline-offset-2 hover:opacity-80"
                 >
                   Terms
                 </a>{" "}
@@ -231,7 +250,7 @@ export function SignUpPage() {
                 <a
                   href="#privacy"
                   onClick={(e) => e.preventDefault()}
-                  className="text-black underline underline-offset-2"
+                  className="text-[#010120] font-bold underline underline-offset-2 hover:opacity-80"
                 >
                   Sensitive Data Privacy Policy
                 </a>
@@ -240,7 +259,7 @@ export function SignUpPage() {
             </div>
 
             {errors.termsAccepted && (
-              <p className="text-red-500 text-xs mt-1">
+              <p className="text-red-500 text-xs mt-1 m-0">
                 {errors.termsAccepted.message}
               </p>
             )}
@@ -249,14 +268,16 @@ export function SignUpPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="group w-full h-12 flex items-center justify-center gap-2 border border-black rounded bg-black hover:bg-neutral-800 active:translate-y-0 text-white font-mono text-xs font-medium tracking-wider uppercase shadow-md transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lg cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed mt-1"
+            className="auth-submit-btn group w-full h-12 flex items-center justify-center gap-2 border border-[#010120] rounded-lg bg-[#010120] text-white hover:bg-[#1a1a36] active:translate-y-0 font-mono text-xs font-semibold tracking-wider uppercase shadow-md transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lg cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed mt-1"
           >
             {isSubmitting ? (
-              <span>AUTHENTICATING...</span>
+              <span className="text-white font-semibold">AUTHENTICATING...</span>
             ) : (
               <>
-                <LogIn className="size-4" />
-                <span>START YOUR JOURNEY</span>
+                <LogIn className="size-4 text-white" />
+                <span className="text-white font-bold tracking-wider">
+                  SIGN UP · START YOUR JOURNEY
+                </span>
               </>
             )}
           </button>

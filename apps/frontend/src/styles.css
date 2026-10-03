@@ -120,7 +120,7 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
   border: 0;
   border-radius: 3px;
   min-height: 41px;
-  padding: 12px 18px;
+  padding: 10px 16px;
   background: var(--ink);
   color: #ffffff;
   display: inline-flex;
@@ -131,6 +131,7 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
   font-size: 10px;
   letter-spacing: .6px;
   font-weight: 500;
+  text-transform: uppercase;
 }
 
 .primary:hover:not(:disabled) {
@@ -156,6 +157,7 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
   font-size: 10px;
   letter-spacing: .6px;
   font-weight: 500;
+  text-transform: uppercase;
 }
 
 .outline:hover {
@@ -164,6 +166,11 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
 
 .outline:active:not(:disabled) {
   transform: scale(.98);
+}
+
+.daily-timer-box,
+.daily-timer-box * {
+  font-family: 'DM Mono', monospace !important;
 }
 
 /* Switch control */
@@ -471,7 +478,11 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
   background: #3b3576 !important;
   border: 1px solid #5a52a5 !important;
   color: #ffffff !important;
-  font-weight: 700 !important;
+  font-family: 'DM Mono', monospace !important;
+  font-size: 10px !important;
+  letter-spacing: .6px !important;
+  font-weight: 500 !important;
+  text-transform: uppercase !important;
 }
 
 [data-theme='dark'] .primary:hover:not(:disabled) {
@@ -636,6 +647,132 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
   color: #ffffff !important;
 }
 
+/* ==========================================================================
+   Auth / Login / Register Form Card - Always Pure White Style (Protected from dark mode)
+   ========================================================================== */
+.auth-card,
+[data-theme='dark'] .auth-card,
+[data-theme='dark'] div.auth-card {
+  background-color: #ffffff !important;
+  border: 1px solid #e5e5eb !important;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.05) !important;
+  color: #010120 !important;
+}
+
+.auth-card h1,
+.auth-card h2,
+.auth-card h3,
+.auth-card p,
+.auth-card strong,
+.auth-card b,
+.auth-card span:not(.auth-badge):not(.auth-submit-btn):not(.auth-submit-btn *),
+.auth-card label,
+[data-theme='dark'] .auth-card h1,
+[data-theme='dark'] .auth-card h2,
+[data-theme='dark'] .auth-card h3,
+[data-theme='dark'] .auth-card p,
+[data-theme='dark'] .auth-card strong,
+[data-theme='dark'] .auth-card b,
+[data-theme='dark'] .auth-card span:not(.auth-badge):not(.auth-submit-btn):not(.auth-submit-btn *),
+[data-theme='dark'] .auth-card label {
+  color: #010120 !important;
+}
+
+.auth-card .text-slate-500,
+.auth-card .text-slate-400,
+.auth-card .text-\[\#777781\],
+.auth-card .text-\[\#85858e\],
+[data-theme='dark'] .auth-card .text-slate-500,
+[data-theme='dark'] .auth-card .text-slate-400,
+[data-theme='dark'] .auth-card .text-\[\#777781\],
+[data-theme='dark'] .auth-card .text-\[\#85858e\] {
+  color: #71717a !important;
+}
+
+.auth-card input,
+[data-theme='dark'] .auth-card input {
+  background-color: #ffffff !important;
+  color: #010120 !important;
+  border: 1px solid #e5e5eb !important;
+}
+
+.auth-card input:focus,
+[data-theme='dark'] .auth-card input:focus {
+  border-color: #010120 !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(1, 1, 32, 0.1) !important;
+}
+
+.auth-card input::placeholder,
+[data-theme='dark'] .auth-card input::placeholder {
+  color: #9ca3af !important;
+}
+
+.auth-card .auth-tabs,
+[data-theme='dark'] .auth-card .auth-tabs {
+  background-color: #f4f4f7 !important;
+  border: 1px solid #e5e5ea !important;
+}
+
+.auth-card .auth-tab-active,
+[data-theme='dark'] .auth-card .auth-tab-active {
+  background-color: #ffffff !important;
+  color: #010120 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.auth-card .auth-tab-inactive,
+[data-theme='dark'] .auth-card .auth-tab-inactive {
+  background-color: transparent !important;
+  color: #71717a !important;
+}
+
+.auth-card .auth-tab-inactive:hover,
+[data-theme='dark'] .auth-card .auth-tab-inactive:hover {
+  color: #010120 !important;
+}
+
+.auth-card .auth-submit-btn,
+.auth-card .auth-submit-btn *,
+[data-theme='dark'] .auth-card .auth-submit-btn,
+[data-theme='dark'] .auth-card .auth-submit-btn * {
+  background-color: #010120 !important;
+  color: #ffffff !important;
+  fill: #ffffff !important;
+  border-color: #010120 !important;
+}
+
+.auth-card .auth-submit-btn:hover,
+.auth-card .auth-submit-btn:hover *,
+[data-theme='dark'] .auth-card .auth-submit-btn:hover,
+[data-theme='dark'] .auth-card .auth-submit-btn:hover * {
+  background-color: #1e1e38 !important;
+  color: #ffffff !important;
+}
+
+.auth-card button:not(.auth-submit-btn):not([role="radio"]):not([role="tab"]) {
+  color: #71717a !important;
+  background-color: transparent !important;
+}
+
+.auth-card button:not(.auth-submit-btn):not([role="radio"]):not([role="tab"]):hover {
+  color: #010120 !important;
+}
+
+/* Payment Method element inside auth card */
+.auth-card .payment-method-section,
+[data-theme='dark'] .auth-card .payment-method-section {
+  background-color: #f9fafb !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+.auth-card .payment-method-section input,
+[data-theme='dark'] .auth-card .payment-method-section input {
+  background-color: #ffffff !important;
+  color: #010120 !important;
+  border: 1px solid #e5e7eb !important;
+}
+
 @media (max-width: 650px) {
   .bottom-nav button {
     flex-direction: column;
@@ -663,7 +800,7 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
 @layer utilities {
   @media (width >= 40rem) {
     .sm\:px-6 {
-      padding-inline: calc(var(--spacing) * 6) !important;
+      padding-inline: calc(var(--spacing) * 60) !important;
     }
   }
 }

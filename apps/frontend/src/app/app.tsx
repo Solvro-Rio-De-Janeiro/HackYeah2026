@@ -1,18 +1,16 @@
-import { useEffect } from "react";
-import { Routes, Route, Navigate, useLocation, Outlet } from "react-router-dom";
-import { AuthLayout } from "./components/auth-layout";
-import { SignUpPage } from "./pages/sign-up-page";
-import { LoginPage } from "./pages/login-page";
+import React, { useEffect } from 'react';
+import { Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
+import { AuthLayout } from './components/auth-layout';
+import { SignUpPage } from './pages/sign-up-page';
+import { LoginPage } from './pages/login-page';
 
-import { DashboardProvider } from "./context/DashboardContext";
-import Header from "./components/layout/Header";
-import BottomNav from "./components/layout/BottomNav";
-import DashboardPage from "./pages/DashboardPage";
-import IncidentsPage from "./pages/IncidentsPage";
-import PreferencesPage from "./pages/PreferencesPage";
-import ProfilePage from "./pages/ProfilePage";
-import LandingPage from "./pages/landing-page";
-import { MainLayout } from "./components/layout/MainLayout";
+import { DashboardProvider } from './context/DashboardContext';
+import Header from './components/layout/Header';
+import BottomNav from './components/layout/BottomNav';
+import DashboardPage from './pages/DashboardPage';
+import IncidentsPage from './pages/IncidentsPage';
+import PreferencesPage from './pages/PreferencesPage';
+import ProfilePage from './pages/ProfilePage';
 
 function DashboardLayout() {
   const location = useLocation();
@@ -43,23 +41,19 @@ export function App() {
 
   useEffect(() => {
     const titles: Record<string, string> = {
-      "/": "Sober // Moja grupa",
-      "/dashboard": "Sober // Moja grupa",
-      "/incidents": "Sober // Przyłapania",
-      "/preferences": "Sober // Preferencje",
-      "/profile": "Sober // Profil",
-      "/signup": "Sober // Rejestracja",
-      "/login": "Sober // Logowanie",
+      '/': 'Sober // Moja grupa',
+      '/dashboard': 'Sober // Moja grupa',
+      '/incidents': 'Sober // Przyłapania',
+      '/preferences': 'Sober // Preferencje',
+      '/profile': 'Sober // Profil',
+      '/signup': 'Sober // Rejestracja',
+      '/login': 'Sober // Logowanie'
     };
-    document.title = titles[location.pathname] || "Sober // Dashboard";
+    document.title = titles[location.pathname] || 'Sober // Dashboard';
   }, [location.pathname]);
 
   return (
     <Routes>
-      <Route element={<MainLayout />}>
-        <Route path="/" element={<LandingPage />} />
-      </Route>
-
       {/* Auth routes */}
       <Route element={<AuthLayout />}>
         <Route path="/signup" element={<SignUpPage />} />
@@ -68,6 +62,7 @@ export function App() {
 
       {/* Dashboard routes */}
       <Route element={<DashboardLayout />}>
+        <Route path="/" element={<DashboardPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/incidents" element={<IncidentsPage />} />
         <Route path="/preferences" element={<PreferencesPage />} />
