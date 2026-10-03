@@ -1,19 +1,22 @@
-import React, { useState } from 'react';
-import { useDashboard, money, dailyAmount } from '../context/DashboardContext';
-import IncidentRow from '../components/incidents/IncidentRow';
-import IncidentFormModal from '../components/incidents/IncidentFormModal';
-import PhotoLightboxModal from '../components/incidents/PhotoLightboxModal';
-import DeleteIncidentModal from '../components/incidents/DeleteIncidentModal';
+import React, { useState } from "react";
+import { useDashboard, money, dailyAmount } from "../context/DashboardContext";
+import IncidentRow from "../components/incidents/IncidentRow";
+import IncidentFormModal from "../components/incidents/IncidentFormModal";
+import PhotoLightboxModal from "../components/incidents/PhotoLightboxModal";
+import DeleteIncidentModal from "../components/incidents/DeleteIncidentModal";
+import { HeartHandshake, Plus, PlusCircle } from "lucide-react";
 
 export function IncidentsPage() {
   const { activeGroup, incidents, updateIncidents } = useDashboard();
 
   const [showForm, setShowForm] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [removeId, setRemoveId] = useState<string | null>(null);
   const [photoView, setPhotoView] = useState<string | null>(null);
 
-  const groupIncidents = incidents.filter((item) => item.groupId === activeGroup.id);
+  const groupIncidents = incidents.filter(
+    (item) => item.groupId === activeGroup.id,
+  );
   const rate = dailyAmount(activeGroup);
 
   return (
@@ -27,33 +30,48 @@ export function IncidentsPage() {
             Przyłapania
           </h1>
           <p className="text-xs text-[#727279] m-0">
-            Paleniu mówimy wprost. Sobie — z wyrozumiałością.
+            Słabościom mówimy wprost. Sobie — z wyrozumiałością.
           </p>
         </div>
 
         <button
           type="button"
           aria-label="Zapisz nowe zdarzenie palenia"
-          className="primary bg-[#010120] text-white hover:bg-[#292943] rounded py-3 px-5 font-mono text-xs tracking-wider uppercase inline-flex items-center gap-2 cursor-pointer transition-all flex-shrink-0"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 border border-line rounded-xl px-4 py-2.5 sm:py-2 text-xs font-semibold text-ink bg-white hover:bg-[#f6f6fa] cursor-pointer transition-all shrink-0 shadow-sm md:shadow-none"
           onClick={() => {
-            setMessage('');
+            setMessage("");
             setShowForm(true);
           }}
         >
-          <span aria-hidden="true">＋</span> ZAPISZ ZDARZENIE
+          <PlusCircle className="size-4 shrink-0" />
+          <span>ZAPISZ ZDARZENIE</span>
         </button>
       </div>
 
-      <div className="incident-info flex items-center gap-4 bg-[#f2f0fc] p-5 sm:p-6 rounded mb-8">
-        <span className="text-2xl text-[#7e75a9] leading-none flex-shrink-0" aria-hidden="true">↗</span>
-        <p className="text-xs leading-relaxed text-[#59536f] m-0">
-          To historia zgłoszonych zdarzeń, nie system oceniania. Jeden trudniejszy dzień nie przekreśla postępu.
-          Zapis nie nalicza dodatkowej opłaty — dzienna kwota tej grupy pozostaje {money(rate)} na osobę.
-        </p>
-      </div>
+      <div className="incident-info flex items-start gap-3.5 bg-[#f2f0fc] p-4 sm:p-5 rounded-xl border border-[#e3dff8] mb-8">
+        {/* Ikona w subtelnym kafelku */}
+        <div className="w-9 h-9 rounded-lg bg-white/80 grid place-items-center text-[#7472d5] shrink-0 shadow-sm">
+          <HeartHandshake className="size-5" />
+        </div>
 
+        <div className="flex flex-col gap-1">
+          <strong className="text-xs font-semibold text-[#010120]">
+            Bezpieczna przestrzeń, nie ocena
+          </strong>
+          <p className="text-xs leading-relaxed text-[#59536f] m-0">
+            Jeden trudniejszy dzień nie przekreśla twojego postępu. Zgłoszenie
+            zdarzenia nie wpływa na koszty — stawka grupy to wciąż{" "}
+            <span className="font-semibold text-[#010120]">{money(rate)}</span>{" "}
+            dziennie.
+          </p>
+        </div>
+      </div>
       {message && (
-        <p className="save-feedback bg-[#edf9f3] text-[#285342] p-3 text-xs rounded mb-6 text-center" role="status" aria-live="polite">
+        <p
+          className="save-feedback bg-[#edf9f3] text-[#285342] p-3 text-xs rounded mb-6 text-center"
+          role="status"
+          aria-live="polite"
+        >
           {message}
         </p>
       )}
@@ -69,7 +87,11 @@ export function IncidentsPage() {
         </div>
 
         {groupIncidents.length ? (
-          <ul className="flex flex-col list-none p-0 m-0" role="list" aria-label="Lista zgłoszonych zdarzeń palenia">
+          <ul
+            className="flex flex-col list-none p-0 m-0"
+            role="list"
+            aria-label="Lista zgłoszonych zdarzeń palenia"
+          >
             {[...groupIncidents].reverse().map((incident) => (
               <li key={incident.id} className="list-none">
                 <IncidentRow
@@ -82,22 +104,21 @@ export function IncidentsPage() {
           </ul>
         ) : (
           <div className="activity-empty text-center py-8">
-            <span className="text-3xl text-[#9990c4] block mb-2" aria-hidden="true">✧</span>
+            <span
+              className="text-3xl text-[#9990c4] block mb-2"
+              aria-hidden="true"
+            >
+              ✧
+            </span>
             <h3 className="text-base font-semibold text-[#010120] mb-1">
-              Na razie bez zdarzeń.
+              Na razie bez zdarzeń
             </h3>
             <p className="text-xs text-[#727279] leading-relaxed">
-              Gdy pojawi się trudniejszy moment, zapisz go tutaj.
-              <br />
-              To punkt wyjścia do rozmowy, nie do osądzania.
+              Zapisuj trudniejsze momenty. To wyjście do rozmowy, nie osąd.
             </p>
           </div>
         )}
       </section>
-
-      <p className="privacy-caption text-[10px] text-[#727279] flex items-center gap-2">
-        Wersja lokalna — historia nie jest udostępniana innym osobom.
-      </p>
 
       <IncidentFormModal
         isOpen={showForm}
@@ -108,7 +129,9 @@ export function IncidentsPage() {
       <DeleteIncidentModal
         incidentId={removeId}
         onClose={() => setRemoveId(null)}
-        onConfirm={(id) => updateIncidents(incidents.filter((item) => item.id !== id))}
+        onConfirm={(id) =>
+          updateIncidents(incidents.filter((item) => item.id !== id))
+        }
       />
 
       <PhotoLightboxModal
