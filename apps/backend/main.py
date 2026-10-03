@@ -1,30 +1,42 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(
-    title="HackYeah2026 Backend",
-    description="FastAPI backend for HackYeah2026",
-    version="0.1.0",
-)
-
-# CORS configuration for frontend communication
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:4200",
-        "http://127.0.0.1:4200",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+import models  # noqa: F401 — register ORM models before mapper configuration
+from auth.router import router as auth_router
+from connect.router import router as connect_router
+from core.db_config import sessionmanager
+from goals.router import router as goal_router
+from group.router import router as group_router
+from payments.router import router as payment_router
+from notifications.router import router as notifications_router
+from user.router import router as user_router
+from user_group.router import router as user_group_router
+from core.db_config import sessionmanager
+from core.scheduler import scheduler
+import models  # noqa: F401 — register ORM models before mapper configuration
 
 
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to HackYeah2026 FastAPI Backend"}
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    scheduler.start()
+    yield
+
+    scheduler.shutdown(wait=False)
+    if sessionmanager._engine is not None:
+        await sessionmanager.close()
+
+
+app = FastAPI(lifespan=lifespan)
+app.include_router(goal_router, prefix="/api")
+app.include_router(user_router, prefix="/api")
+app.include_router(auth_router, prefix="/api")
+app.include_router(group_router, prefix="/api")
+app.include_router(user_group_router, prefix="/api")
+app.include_router(payment_router, prefix="/api/payments")
+app.include_router(connect_router, prefix="/api/connect")
+app.include_router(router=notifications_router, prefix="/api")
+
 
 
 @app.get("/health")
@@ -32,12 +44,11 @@ def health_check():
     return {"status": "ok"}
 
 
-@app.get("/api/hello")
-def hello():
-    return {"message": "Hello from FastAPI!"}
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
 
 
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+@app.get("/items/{item_id}")
+def read_item(item_id: int, q: str | None = None):
+    return {"item_id": item_id, "q": q}
