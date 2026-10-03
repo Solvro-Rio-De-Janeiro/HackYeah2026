@@ -4,7 +4,6 @@ from fastapi import FastAPI
 
 from core.db_config import sessionmanager
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
