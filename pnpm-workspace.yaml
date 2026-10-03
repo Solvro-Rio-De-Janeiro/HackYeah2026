@@ -1,0 +1,4 @@
+autoInstallPeers: true
+allowBuilds:
+  nx: true
+  esbuild: false
