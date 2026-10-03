@@ -34,6 +34,9 @@ class UserGroup(Base):
 
     user: Mapped["User"] = relationship(back_populates="memberships")
     group: Mapped[Group] = relationship(back_populates="memberships")
+    balance: Mapped["GroupMemberBalance | None"] = relationship(
+        back_populates="membership", uselist=False
+    )
 
 
 class GroupMemberBalance(Base):
@@ -42,7 +45,11 @@ class GroupMemberBalance(Base):
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid4
     )
+    user_group_id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("user_group.id"), nullable=False, unique=True
+    )
     balance: Mapped[Decimal] = mapped_column(Numeric, nullable=False, default=0)
     updated_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
+    membership: Mapped[UserGroup] = relationship(back_populates="balance")
