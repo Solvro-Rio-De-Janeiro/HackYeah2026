@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *, .dark, .dark *));
+
 @theme {
   --font-sans: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'DM Mono', monospace;
@@ -331,6 +333,65 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
 @keyframes indicator-reveal {
   from { opacity: 0; transform: scaleX(.55); }
   to { opacity: 1; transform: scaleX(1); }
+}
+
+/* Light Theme Explicit Definitions */
+:root[data-theme='light'] {
+  --theme-canvas: #ffffff;
+  --theme-surface: #ffffff;
+  --theme-soft: #f4f3fc;
+  --theme-text: #17171c;
+  --ink: #010120;
+  --lavender: #bdbbff;
+  --mint: #c8f6f9;
+  --line: #ebebeb;
+  --muted: #4e4e56;
+  --focus-ring: #4338ca;
+  --radius: 4px;
+
+  color: #17171c;
+  background-color: #ffffff;
+}
+
+[data-theme='light'] body,
+[data-theme='light'] .app-shell {
+  background-color: #ffffff !important;
+  color: #17171c !important;
+}
+
+[data-theme='light'] .panel,
+[data-theme='light'] .modal,
+[data-theme='light'] .goal-card,
+[data-theme='light'] .members-card,
+[data-theme='light'] .activity-card,
+[data-theme='light'] .subscription-strip {
+  background-color: #ffffff !important;
+  border-color: #ebebeb !important;
+  color: #17171c !important;
+}
+
+[data-theme='light'] .outline {
+  background-color: #ffffff !important;
+  color: #010120 !important;
+  border-color: #ebebeb !important;
+}
+
+[data-theme='light'] .outline:hover {
+  background-color: #f6f6fa !important;
+}
+
+[data-theme='light'] header {
+  background-color: #ffffff !important;
+  border-color: #ebebeb !important;
+}
+
+[data-theme='light'] header a {
+  color: #010120 !important;
+}
+
+[data-theme='light'] .bottom-nav {
+  background: rgba(255, 255, 255, 0.93) !important;
+  border-color: #ebebeb !important;
 }
 
 /* Dark Theme Overrides - White Text / Napisy Białe */
@@ -800,7 +861,7 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, select:focus-visi
 @layer utilities {
   @media (width >= 40rem) {
     .sm\:px-6 {
-      padding-inline: calc(var(--spacing) * 60) !important;
+      padding-inline: calc(var(--spacing) * 6) !important;
     }
   }
 }

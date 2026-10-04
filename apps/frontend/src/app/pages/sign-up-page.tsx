@@ -9,6 +9,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { PaymentMethodSection } from "../components/payment-method-section";
+import { setAuthToken } from "../auth";
 
 export function SignUpPage() {
   const navigate = useNavigate();
@@ -50,19 +51,42 @@ export function SignUpPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: formData.username,
+          name: formData.username,
           email: formData.email,
           password: formData.password,
         }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData?.message || "Registration failed. Please try again.",
+          errorData?.detail || errorData?.message || "Registration failed. Please try again.",
         );
       }
 
+      const data = await response.json().catch(() => null);
+      if (data?.access_token) {
+        setAuthToken(data.access_token);
+        try {
+          const meRes = await fetch(`${API_URL}/api/auth/me`, {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${data.access_token}`,
+            },
+          });
+          if (meRes.ok) {
+            const meData = await meRes.json();
+            setStoredUser(meData);
+          } else {
+            setStoredUser({ id: '', name: formData.username, email: formData.email, role: 'user' });
+          }
+        } catch {
+          setStoredUser({ id: '', name: formData.username, email: formData.email, role: 'user' });
+        }
+      } else {
+        setAuthToken('authenticated-session');
+        setStoredUser({ id: '', name: formData.username, email: formData.email, role: 'user' });
+      }
       navigate("/dashboard");
     } catch (err) {
       if (err instanceof Error) {

@@ -10,7 +10,7 @@ describe('App', () => {
       </MemoryRouter>
     );
     expect(baseElement).toBeTruthy();
-    expect(screen.getByText('Moja grupa')).toBeTruthy();
+    expect(screen.getAllByText('Moja grupa').length).toBeGreaterThan(0);
   });
 
   it('should render the brand header and navigation on dashboard', () => {
@@ -20,7 +20,7 @@ describe('App', () => {
       </MemoryRouter>
     );
     expect(screen.getByLabelText('Sober Home')).toBeTruthy();
-    expect(screen.getByText('Moja grupa')).toBeTruthy();
+    expect(screen.getAllByText('Moja grupa').length).toBeGreaterThan(0);
     expect(screen.getByText('Przyłapania')).toBeTruthy();
   });
 
@@ -132,5 +132,40 @@ describe('App', () => {
     // Check that payment is recorded and timer updates
     expect(screen.getAllByText(/WPŁATA ZAKSIĘGOWANA/i).length).toBeGreaterThan(0);
   });
-});
 
+  it('should render Brak celów when no goal exists and allow opening add goal modal', () => {
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    // Verify "Brak celów" is displayed when group has no goal
+    expect(screen.getAllByText(/Brak celów/i).length).toBeGreaterThan(0);
+
+    // Find "DODAJ CEL" button
+    const addGoalButtons = screen.getAllByRole('button', { name: /DODAJ CEL/i });
+    expect(addGoalButtons.length).toBeGreaterThan(0);
+
+    act(() => {
+      fireEvent.click(addGoalButtons[0]);
+    });
+
+    // Verify modal opens with goal title and target inputs
+    expect(screen.getByText(/Wyznacz wspólny cel/i)).toBeTruthy();
+    expect(screen.getByLabelText(/Tytuł celu/i)).toBeTruthy();
+    expect(screen.getByLabelText(/Kwota celu/i)).toBeTruthy();
+  });
+
+  it('should render Profile page with actions on /profile', () => {
+    render(
+      <MemoryRouter initialEntries={['/profile']}>
+        <App />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText('TWÓJ CODZIENNY RYTM')).toBeTruthy();
+    expect(screen.getByText(/TWÓJ PROFIL W GRUPIE/i)).toBeTruthy();
+    expect(screen.getByText(/SUMA TWOICH WPŁAT/i)).toBeTruthy();
+  });
+});

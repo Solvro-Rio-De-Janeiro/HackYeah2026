@@ -5,6 +5,7 @@ import { LoginFormData, loginFormSchema } from "../schemas/login-form-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LogIn } from "lucide-react";
 import { PasswordInput } from "../components/password-input";
+import { setAuthToken, setStoredUser } from "../auth";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -45,6 +46,29 @@ export function LoginPage() {
         throw new Error("Something went wrong. Please try again later.");
       }
 
+      const data = await response.json().catch(() => null);
+      if (data?.access_token) {
+        setAuthToken(data.access_token);
+        try {
+          const meRes = await fetch(`${API_URL}/api/auth/me`, {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${data.access_token}`,
+            },
+          });
+          if (meRes.ok) {
+            const meData = await meRes.json();
+            setStoredUser(meData);
+          } else {
+            setStoredUser({ id: '', name: email.split('@')[0], email, role: 'user' });
+          }
+        } catch {
+          setStoredUser({ id: '', name: email.split('@')[0], email, role: 'user' });
+        }
+      } else {
+        setAuthToken('authenticated-session');
+        setStoredUser({ id: '', name: email.split('@')[0], email, role: 'user' });
+      }
       navigate("/dashboard");
     } catch (err) {
       if (err instanceof Error) {

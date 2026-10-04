@@ -91,7 +91,7 @@ export function GoalDetailsModal({
         <div className="goal-summary grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
           <div className="flex flex-col gap-2 bg-[#f4f3fc] p-4 rounded min-w-0">
             <span className="eyebrow muted text-[8px] font-mono tracking-wider uppercase text-[#727279]">
-              RAZEM WPŁACONE · DEMO
+              RAZEM WPŁACONE
             </span>
             <strong className="text-2xl font-semibold text-[#010120] [overflow-wrap:anywhere]">
               {money(total)}
@@ -120,7 +120,7 @@ export function GoalDetailsModal({
         <div className="goal-member-table w-full mb-6">
           <div className="goal-table-heading grid grid-cols-[1.6fr_1fr_0.8fr] gap-3 pb-3 border-b border-[#ebebeb] text-[9px] font-mono text-[#727279]">
             <span>OSOBA</span>
-            <span className="text-right">WPŁACONE · DEMO</span>
+            <span className="text-right">WPŁACONE</span>
             <span className="text-right">PRZYŁAPANIA</span>
           </div>
 
@@ -145,7 +145,7 @@ export function GoalDetailsModal({
                       )}
                     </strong>
                     <span className="text-[10px] text-[#727279]">
-                      {index === 0 ? 'Twoja historia' : 'Osoba demonstracyjna'}
+                      {index === 0 ? 'Twoja historia' : 'Członek grupy'}
                     </span>
                   </div>
                 </div>
@@ -167,7 +167,7 @@ export function GoalDetailsModal({
 
         <div className="goal-details-footer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-6 pt-4 border-t border-[#ebebeb]">
           <p className="text-[10px] leading-relaxed text-[#727279] m-0 max-w-md">
-            Kwoty pochodzą z symulacji i wcześniejszych zapisów. Liczniki pokazują zapisane zgłoszenia — nie zweryfikowane naruszenia.
+            Kwoty pochodzą ze zgromadzonych wpłat. Liczniki pokazują zapisane zgłoszenia — nie zweryfikowane naruszenia.
           </p>
           <button
             type="button"
