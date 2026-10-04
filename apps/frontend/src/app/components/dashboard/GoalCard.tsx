@@ -1,4 +1,11 @@
-import { ArrowUpRight, Plus, Target, UsersRound } from "lucide-react";
+import {
+  ArrowUpRight,
+  CirclePlus,
+  PlayCircle,
+  Plus,
+  Target,
+  UsersRound,
+} from "lucide-react";
 import {
   useDashboard,
   money,
@@ -81,18 +88,16 @@ export function GoalCard({
               className="outline inline-flex items-center gap-1.5 border border-[#ebebeb] dark:border-white/20 text-[#010120] dark:text-white px-3 py-2 font-mono text-xs tracking-wider uppercase rounded hover:bg-[#f6f6fa] dark:hover:bg-white/10 cursor-pointer"
               onClick={onAddGoal || onShowGoal}
             >
-              <Plus className="size-3.5" aria-hidden="true" />
+              <CirclePlus className="size-4" aria-hidden="true" />
               DODAJ CEL
-              <ArrowUpRight className="size-3.5" aria-hidden="true" />
             </button>
             <button
               type="button"
               className="primary inline-flex items-center gap-1.5 bg-[#010120] text-white hover:bg-[#292943] px-4 py-2 font-mono text-xs tracking-wider uppercase rounded cursor-pointer transition-all"
               onClick={onOpenCreate || onAddGoal}
             >
-              <UsersRound className="size-3.5" aria-hidden="true" />
+              <CirclePlus className="size-4" aria-hidden="true" />
               STWÓRZ GRUPĘ
-              <ArrowUpRight className="size-3.5" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -151,7 +156,7 @@ export function GoalCard({
       <div className="goal-bottom flex items-center justify-between flex-wrap gap-3 pt-3 border-t border-[#ebebeb] dark:border-white/10">
         <span className="text-[10px] text-[#727279] dark:text-slate-400 flex items-center gap-2">
           <span className="small-dot w-1.5 h-1.5 rounded-full bg-[#9691bf]" />
-          {money(rate)} dziennie na osobę.
+          {money(rate)} dziennie na osobę
         </span>
 
         <button
@@ -159,9 +164,8 @@ export function GoalCard({
           className="outline inline-flex items-center gap-1.5 border border-[#ebebeb] dark:border-white/20 text-[#010120] dark:text-white px-4 py-2 font-mono text-xs tracking-wider uppercase rounded hover:bg-[#f6f6fa] dark:hover:bg-white/10 cursor-pointer"
           onClick={onOpenInvite}
         >
-          <UsersRound className="size-3.5" aria-hidden="true" />
+          <UsersRound className="size-4" aria-hidden="true" />
           ZAPROŚ DO GRUPY
-          <ArrowUpRight className="size-3.5" aria-hidden="true" />
         </button>
       </div>
     </section>

@@ -47,7 +47,6 @@ export function GroupToolbar({ onOpenJoin, onOpenCreate }: GroupToolbarProps) {
         >
           <UsersRound className="size-4" aria-hidden="true" />
           DOŁĄCZ DO GRUPY
-          <ArrowUpRight className="size-3.5" aria-hidden="true" />
         </button>
         <button
           type="button"

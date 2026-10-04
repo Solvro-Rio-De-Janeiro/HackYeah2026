@@ -1,5 +1,9 @@
-import React from 'react';
-import { useDashboard, money, dailyAmount } from '../../context/DashboardContext';
+import React from "react";
+import {
+  useDashboard,
+  money,
+  dailyAmount,
+} from "../../context/DashboardContext";
 
 export function HistoryPreviewCard() {
   const { activeGroup } = useDashboard();
@@ -19,25 +23,25 @@ export function HistoryPreviewCard() {
         </div>
 
         <h3 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#17171c] my-3">
-          {latest ? money(latest.amount) : 'Jeszcze bez historii.'}
+          {latest ? money(latest.amount) : "Jeszcze bez historii."}
         </h3>
 
         <p className="text-xs leading-relaxed text-[#3e6569] mb-4">
           {latest
             ? latest.kind
-              ? 'Dzienna kwota grupy · symulacja'
-              : 'Wcześniejszy zapis oszczędności'
-            : 'Tutaj zobaczysz ostatni zapis dziennej kwoty grupy.'}
+              ? "Dzienna kwota grupy"
+              : "Wcześniejszy zapis oszczędności"
+            : "Tutaj zobaczysz ostatni zapis dziennej kwoty grupy."}
         </p>
 
-        <div className="support-rule h-[1px] bg-[#a9dbe0] my-4" />
+        <div className="support-rule h-px bg-[#a9dbe0] my-4" />
 
         <div className="support-note flex items-center gap-2 text-[10px] text-[#3e6569] mb-4 font-mono">
           <span className="online-dot w-1.5 h-1.5 rounded-full bg-[#40827f]" />
           {latest
-            ? new Date(latest.date).toLocaleString('pl-PL', {
-                dateStyle: 'medium',
-                timeStyle: 'short'
+            ? new Date(latest.date).toLocaleString("pl-PL", {
+                dateStyle: "medium",
+                timeStyle: "short",
               })
             : `${money(rate)} każdego dnia`}
         </div>
@@ -51,10 +55,6 @@ export function HistoryPreviewCard() {
           <span>ZOBACZ HISTORIĘ</span>
           <span>↗</span>
         </a>
-
-        <p className="personal-footnote text-[10px] text-center text-[#3e6569] mt-3 m-0">
-          Demo — żadne pieniądze nie są pobierane.
-        </p>
       </div>
     </section>
   );

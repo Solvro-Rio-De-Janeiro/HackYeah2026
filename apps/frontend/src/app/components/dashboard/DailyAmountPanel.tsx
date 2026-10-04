@@ -1,30 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { useDashboard, money, dailyAmount } from '../../context/DashboardContext';
-import Modal from '../common/Modal';
-import { CheckCircle2, Clock } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import {
+  useDashboard,
+  money,
+  dailyAmount,
+} from "../../context/DashboardContext";
+import Modal from "../common/Modal";
+import {
+  CheckCircle2,
+  CircleCheck,
+  Clock,
+  HelpCircle,
+  InfoIcon,
+} from "lucide-react";
 
 function getTimeUntilMidnight(): string {
   const now = new Date();
   const midnight = new Date(now);
   midnight.setHours(24, 0, 0, 0);
-  const diffSec = Math.max(0, Math.floor((midnight.getTime() - now.getTime()) / 1000));
-  const hours = String(Math.floor(diffSec / 3600)).padStart(2, '0');
-  const minutes = String(Math.floor((diffSec % 3600) / 60)).padStart(2, '0');
-  const seconds = String(diffSec % 60).padStart(2, '0');
+  const diffSec = Math.max(
+    0,
+    Math.floor((midnight.getTime() - now.getTime()) / 1000),
+  );
+  const hours = String(Math.floor(diffSec / 3600)).padStart(2, "0");
+  const minutes = String(Math.floor((diffSec % 3600) / 60)).padStart(2, "0");
+  const seconds = String(diffSec % 60).padStart(2, "0");
   return `${hours}:${minutes}:${seconds}`;
 }
 
 export function DailyAmountPanel() {
   const { activeGroup, groups, updateGroups } = useDashboard();
   const [open, setOpen] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [timeRemaining, setTimeRemaining] = useState(getTimeUntilMidnight());
 
   const amount = dailyAmount(activeGroup);
-  const today = new Date().toLocaleDateString('en-CA');
+  const today = new Date().toLocaleDateString("en-CA");
   const recordedToday = activeGroup.deposits.some(
     (deposit) =>
-      deposit.kind && new Date(deposit.date).toLocaleDateString('en-CA') === today
+      deposit.kind &&
+      new Date(deposit.date).toLocaleDateString("en-CA") === today,
   );
 
   // Live timer tick every second
@@ -42,18 +56,20 @@ export function DailyAmountPanel() {
       id: crypto.randomUUID(),
       amount,
       date: new Date().toISOString(),
-      note: 'Dzienna kwota grupy · wpłata użytkownika',
-      kind: 'daily-demo' as const
+      note: "Dzienna kwota grupy · wpłata użytkownika",
+      kind: "daily-demo" as const,
     };
 
     updateGroups(
       groups.map((item) =>
         item.id === activeGroup.id
           ? { ...item, deposits: [...item.deposits, deposit] }
-          : item
-      )
+          : item,
+      ),
     );
-    setMessage(`✓ Zaksięgowano dzisiejszą wpłatę ${money(amount)}! Twoja skarbonka grupy została powiększona.`);
+    setMessage(
+      `✓ Zaksięgowano dzisiejszą wpłatę ${money(amount)}! Twoja skarbonka grupy została powiększona.`,
+    );
     setOpen(false);
   }
 
@@ -70,9 +86,9 @@ export function DailyAmountPanel() {
               DZIENNA KWOTA GRUPY
             </span>
             <strong className="text-2xl font-semibold tracking-tight text-[#010120] dark:text-white">
-              {money(amount)}{' '}
+              {money(amount)}{" "}
               <span className="text-xs font-normal text-[#727279] dark:text-slate-400 tracking-normal">
-                / osoba / dzień
+                / osoba
               </span>
             </strong>
           </div>
@@ -80,18 +96,22 @@ export function DailyAmountPanel() {
 
         {/* Center: Live Timer Waiting for Deposit (W środku panelu) */}
         <div className="daily-timer-box flex items-center gap-3.5 px-4 py-2.5 bg-white dark:bg-white/5 border border-[#e5e5eb] dark:border-white/10 rounded-xl shadow-xs transition-all">
-
-
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
               <span
                 className={`eyebrow text-[10px] font-mono tracking-wider uppercase font-semibold ${
                   recordedToday
-                    ? 'text-emerald-700 dark:text-emerald-400'
-                    : 'text-amber-700 dark:text-amber-400'
+                    ? "text-emerald-700 dark:text-emerald-400"
+                    : "text-amber-700 dark:text-amber-400"
                 }`}
               >
-                {recordedToday ? 'WPŁATA ZAKSIĘGOWANA ✓' : 'CZEKA NA WPŁATĘ'}
+                {recordedToday ? (
+                  <>
+                    <CircleCheck className="size-4" /> WPŁATA ZAKSIĘGOWANA
+                  </>
+                ) : (
+                  "CZEKA NA WPŁATĘ"
+                )}
               </span>
             </div>
             <div className="flex items-baseline gap-2 mt-0.5">
@@ -107,7 +127,7 @@ export function DailyAmountPanel() {
                 {timeRemaining}
               </span>
               <span className="text-[10px] text-[#727279] dark:text-slate-400 font-mono tracking-wider uppercase font-medium">
-                {recordedToday ? 'DO KOLEJNEJ' : 'DO KOŃCA DOBY'}
+                {recordedToday ? "DO KOLEJNEJ" : "DO KOŃCA DOBY"}
               </span>
             </div>
           </div>
@@ -119,11 +139,11 @@ export function DailyAmountPanel() {
             type="button"
             className="outline"
             onClick={() => {
-              setMessage('');
+              setMessage("");
               setOpen(true);
             }}
           >
-            SZCZEGÓŁY KWOTY ↗
+            <InfoIcon className="size-4" /> SZCZEGÓŁY KWOTY
           </button>
 
           <button
@@ -132,19 +152,19 @@ export function DailyAmountPanel() {
             disabled={recordedToday}
             className={
               recordedToday
-                ? 'outline opacity-75 cursor-not-allowed'
-                : 'primary'
+                ? "outline opacity-75 cursor-not-allowed"
+                : "primary"
             }
           >
             {recordedToday ? (
               <>
                 <CheckCircle2 className="size-3.5 text-emerald-600" />
-                <span>WPŁATA ZAKSIĘGOWANA ✓</span>
+                <span>WPŁATA ZAKSIĘGOWANA</span>
               </>
             ) : (
               <>
                 <Clock className="size-3.5 text-[#8ee9ee]" />
-                <span>WPŁAĆ {money(amount)} TERAZ ↗</span>
+                <span>WPŁAĆ {money(amount)} TERAZ</span>
               </>
             )}
           </button>
@@ -167,11 +187,12 @@ export function DailyAmountPanel() {
         onClose={() => setOpen(false)}
         ariaLabel="Dzienna kwota grupy"
         eyebrow="WASZE ZASADY"
-        title={`${money(amount)} dziennie.`}
+        title={`${money(amount)} dziennie`}
         className="group-modal max-h-[90vh] overflow-y-auto"
       >
         <p className="text-xs leading-relaxed text-[#727279] mb-5">
-          To dzienna kwota ustalona dla tej grupy przez jej twórcę. Środki zasilają wspólny cel grupy.
+          To dzienna kwota ustalona dla tej grupy przez jej twórcę. Środki
+          zasilają wspólny cel grupy.
         </p>
 
         <div className="plan-summary grid grid-cols-2 gap-3.5 p-5 bg-[#f6f5fc] dark:bg-white/5 rounded mb-5 text-xs">
@@ -180,23 +201,31 @@ export function DailyAmountPanel() {
             {activeGroup.name}
           </strong>
 
-          <span className="text-[#727279] dark:text-slate-400">Za osobę / dzień</span>
+          <span className="text-[#727279] dark:text-slate-400">
+            Za osobę / dzień
+          </span>
           <strong className="text-right font-semibold text-[#010120] dark:text-white">
             {money(amount)}
           </strong>
 
-          <span className="text-[#727279] dark:text-slate-400">Za osobę / 30 dni</span>
+          <span className="text-[#727279] dark:text-slate-400">
+            Za osobę / 30 dni
+          </span>
           <strong className="text-right font-semibold text-[#010120] dark:text-white">
             {money(amount * 30)}
           </strong>
 
-          <span className="text-[#727279] dark:text-slate-400">Status na dziś</span>
+          <span className="text-[#727279] dark:text-slate-400">
+            Status na dziś
+          </span>
           <strong
             className={`text-right font-semibold font-mono ${
-              recordedToday ? 'text-emerald-600' : 'text-amber-600'
+              recordedToday ? "text-emerald-600" : "text-amber-600"
             }`}
           >
-            {recordedToday ? 'Opłacono na dziś ✓' : `Czeka na wpłatę (${timeRemaining})`}
+            {recordedToday
+              ? "Opłacono na dziś ✓"
+              : `Czeka na wpłatę (${timeRemaining})`}
           </strong>
         </div>
 
@@ -207,18 +236,14 @@ export function DailyAmountPanel() {
           onClick={handleDirectDeposit}
         >
           {recordedToday ? (
-            'DZISIEJSZA WPŁATA ZAKSIĘGOWANA'
+            "DZISIEJSZA WPŁATA ZAKSIĘGOWANA"
           ) : (
             <>
               <Clock className="size-4 text-[#8ee9ee]" />
-              <span>WPŁAĆ KWOTĘ TERAZ ({money(amount)}) ↗</span>
+              <span>WPŁAĆ KWOTĘ TERAZ ({money(amount)})</span>
             </>
           )}
         </button>
-
-        <p className="small-text text-[10px] leading-relaxed text-[#727279] mt-4">
-          Wersja demonstracyjna z czasem rzeczywistym. Żadne prawdziwe pieniądze nie są pobierane z konta.
-        </p>
       </Modal>
     </>
   );

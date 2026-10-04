@@ -1,15 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowUpRight, Plus, UsersRound } from 'lucide-react';
-import { useDashboard, money, dailyAmount, isRealGoal } from '../../context/DashboardContext';
+import React, { useState, useEffect } from "react";
+import { ArrowUpRight, Plus, UsersRound } from "lucide-react";
+import {
+  useDashboard,
+  money,
+  dailyAmount,
+  isRealGoal,
+} from "../../context/DashboardContext";
 
 function getTimeUntilMidnight(): string {
   const now = new Date();
   const midnight = new Date(now);
   midnight.setHours(24, 0, 0, 0);
-  const diffSec = Math.max(0, Math.floor((midnight.getTime() - now.getTime()) / 1000));
-  const hours = String(Math.floor(diffSec / 3600)).padStart(2, '0');
-  const minutes = String(Math.floor((diffSec % 3600) / 60)).padStart(2, '0');
-  const seconds = String(diffSec % 60).padStart(2, '0');
+  const diffSec = Math.max(
+    0,
+    Math.floor((midnight.getTime() - now.getTime()) / 1000),
+  );
+  const hours = String(Math.floor(diffSec / 3600)).padStart(2, "0");
+  const minutes = String(Math.floor((diffSec % 3600) / 60)).padStart(2, "0");
+  const seconds = String(diffSec % 60).padStart(2, "0");
   return `${hours}:${minutes}:${seconds}`;
 }
 
@@ -19,16 +27,21 @@ interface SavingsHeroProps {
   onOpenCreate?: () => void;
 }
 
-export function SavingsHero({ onShowGoal, onAddGoal, onOpenCreate }: SavingsHeroProps) {
+export function SavingsHero({
+  onShowGoal,
+  onAddGoal,
+  onOpenCreate,
+}: SavingsHeroProps) {
   const { activeGroup, members, groupTotal, percentage } = useDashboard();
   const rate = dailyAmount(activeGroup);
   const [timeRemaining, setTimeRemaining] = useState(getTimeUntilMidnight());
   const hasGoal = isRealGoal(activeGroup.goal, activeGroup.target);
 
-  const today = new Date().toLocaleDateString('en-CA');
+  const today = new Date().toLocaleDateString("en-CA");
   const recordedToday = activeGroup.deposits.some(
     (deposit) =>
-      deposit.kind && new Date(deposit.date).toLocaleDateString('en-CA') === today
+      deposit.kind &&
+      new Date(deposit.date).toLocaleDateString("en-CA") === today,
   );
 
   useEffect(() => {
@@ -41,12 +54,12 @@ export function SavingsHero({ onShowGoal, onAddGoal, onOpenCreate }: SavingsHero
   return (
     <section
       className="savings-hero relative isolate mx-[calc(50%_-_50vw)] box-border grid w-screen max-w-none grid-cols-1 items-center gap-[30px] overflow-hidden rounded-none bg-[#010120] px-[clamp(24px,5vw,80px)] pt-10 pb-7 text-white min-[651px]:grid-cols-[1.2fr_1fr] min-[651px]:pb-[37px] min-[1001px]:grid-cols-[1.3fr_1fr] min-[1450px]:pt-12 cursor-pointer"
-      onClick={hasGoal ? onShowGoal : (onOpenCreate || onAddGoal || onShowGoal)}
+      onClick={hasGoal ? onShowGoal : onOpenCreate || onAddGoal || onShowGoal}
     >
       <div className="min-w-0 px-4 sm:px-6 flex flex-col items-center min-[651px]:items-start text-center min-[651px]:text-left">
         <div className="eyebrow lavender flex items-center justify-center min-[651px]:justify-start gap-2 text-[#bdbbff] font-mono text-[11px] sm:text-[10px] tracking-wider uppercase">
           <span className="status-dot w-1.5 h-1.5 rounded-full bg-[#bdbbff]" />
-          {members.length} {members.length === 1 ? 'OSOBA' : 'OSOBY'}
+          {members.length} {members.length === 1 ? "OSOBA" : "OSOBY"}
         </div>
 
         <h1 className="my-5 sm:my-6 text-center min-[651px]:text-left text-[clamp(38px,6.5vw,56px)] leading-[1.12] font-semibold tracking-[-1.5px] text-[#bdbbff] [overflow-wrap:anywhere]">
@@ -58,7 +71,7 @@ export function SavingsHero({ onShowGoal, onAddGoal, onOpenCreate }: SavingsHero
                 e.stopPropagation();
                 onShowGoal();
               }}
-              aria-label={'Zobacz szczegóły celu: ' + activeGroup.goal}
+              aria-label={"Zobacz szczegóły celu: " + activeGroup.goal}
             >
               {activeGroup.goal}
             </button>
@@ -74,7 +87,8 @@ export function SavingsHero({ onShowGoal, onAddGoal, onOpenCreate }: SavingsHero
               }}
               aria-label="Stwórz grupę"
             >
-              Stwórz grupę <ArrowUpRight className="ml-1 size-5" aria-hidden="true" />
+              Stwórz grupę{" "}
+              <ArrowUpRight className="ml-1 size-5" aria-hidden="true" />
             </button>
           )}
         </h1>
@@ -90,7 +104,8 @@ export function SavingsHero({ onShowGoal, onAddGoal, onOpenCreate }: SavingsHero
             <>
               Brak celów w tej grupie.
               <br />
-              Stwórz nową grupę lub wyznacz cel, aby rozpocząć zbieranie dziennych stawek.
+              Stwórz nową grupę lub wyznacz cel, aby rozpocząć zbieranie
+              dziennych stawek.
             </>
           )}
         </p>
@@ -127,7 +142,10 @@ export function SavingsHero({ onShowGoal, onAddGoal, onOpenCreate }: SavingsHero
             </div>
           )}
 
-          <div className="member-stack flex items-center pl-1.5" aria-label="Członkowie grupy">
+          <div
+            className="member-stack flex items-center pl-1.5"
+            aria-label="Członkowie grupy"
+          >
             {members.map((member) => (
               <span
                 key={member.initials}
@@ -155,16 +173,32 @@ export function SavingsHero({ onShowGoal, onAddGoal, onOpenCreate }: SavingsHero
           aria-valuemax={100}
           aria-valuetext={`${percentage}% celu, zebrano ${money(groupTotal)} z ${money(activeGroup.target || 0)}`}
         >
-          <svg className="savings-ring absolute top-0 left-0 w-full h-auto overflow-visible" viewBox="0 0 300 170" aria-hidden="true">
+          <svg
+            className="savings-ring absolute top-0 left-0 w-full h-auto overflow-visible"
+            viewBox="0 0 300 170"
+            aria-hidden="true"
+          >
             <defs>
-              <linearGradient id="savings-ring-gradient" x1="0" y1="0" x2="1" y2="1">
+              <linearGradient
+                id="savings-ring-gradient"
+                x1="0"
+                y1="0"
+                x2="1"
+                y2="1"
+              >
                 <stop offset="0%" stopColor="#eeecff" />
                 <stop offset="45%" stopColor="#bdbbff" />
                 <stop offset="100%" stopColor="#756ace" />
               </linearGradient>
             </defs>
-            <path className="ring-depth fill-none stroke-[17] [stroke-linecap:round]" d="M17 150 A133 133 0 0 1 283 150" />
-            <path className="ring-track fill-none stroke-[17] [stroke-linecap:round]" d="M17 150 A133 133 0 0 1 283 150" />
+            <path
+              className="ring-depth fill-none stroke-[17] [stroke-linecap:round]"
+              d="M17 150 A133 133 0 0 1 283 150"
+            />
+            <path
+              className="ring-track fill-none stroke-[17] [stroke-linecap:round]"
+              d="M17 150 A133 133 0 0 1 283 150"
+            />
             <path
               className="ring-value fill-none stroke-[17] [stroke-linecap:round]"
               d="M17 150 A133 133 0 0 1 283 150"
@@ -175,26 +209,36 @@ export function SavingsHero({ onShowGoal, onAddGoal, onOpenCreate }: SavingsHero
 
           <div className="savings-disc-content absolute inset-[29%_20px_0] flex flex-col items-center justify-center text-center gap-2.5">
             <span className="eyebrow lavender font-mono text-[9px] uppercase tracking-wider text-[#bdbbff]">
-              {hasGoal ? 'WSPÓLNY CEL' : 'BRAK CELU'}
+              {hasGoal ? "WSPÓLNY CEL" : "BRAK CELU"}
             </span>
             <strong className="text-[clamp(23px,3.3vw,40px)] leading-[1.15] tracking-[-1.5px] font-semibold text-white">
               {money(groupTotal)}
             </strong>
             <span className="text-xs text-[#b7b4ce]">
-              {hasGoal ? `z ${money(activeGroup.target || 0)}` : 'Brak wyznaczonego celu'}
+              {hasGoal
+                ? `z ${money(activeGroup.target || 0)}`
+                : "Brak wyznaczonego celu"}
             </span>
-            <span className="disc-percentage font-mono text-[9px] text-[#bdbbff] bg-[#bdbbff12] border border-[#bdbbff25] px-2.5 py-1 rounded-full mt-0.5">
-              {hasGoal ? `${percentage}% CELU` : 'STWÓRZ GRUPĘ'}
-            </span>
+            {hasGoal && (
+              <span className="disc-percentage font-mono text-[9px] text-[#bdbbff] bg-[#bdbbff12] border border-[#bdbbff25] px-2.5 py-1 rounded-full mt-0.5">
+                {percentage}% CELU
+              </span>
+            )}
 
             {hasGoal && (
               <div
                 className="inline-flex items-center gap-1.5 font-mono text-[9px] text-[#bdbbff] bg-[#01012090] border border-[#bdbbff30] px-2.5 py-0.5 rounded-full mt-0.5"
                 role="timer"
-                aria-label={recordedToday ? `Wpłacono na dziś, następna wpłata za ${timeRemaining}` : `Czeka na wpłatę, pozostało ${timeRemaining}`}
+                aria-label={
+                  recordedToday
+                    ? `Wpłacono na dziś, następna wpłata za ${timeRemaining}`
+                    : `Czeka na wpłatę, pozostało ${timeRemaining}`
+                }
               >
                 <span>
-                  {recordedToday ? `WPŁACONO · KOLEJNA ZA ${timeRemaining}` : `CZEKA NA WPŁATĘ · ${timeRemaining}`}
+                  {recordedToday
+                    ? `WPŁACONO · KOLEJNA ZA ${timeRemaining}`
+                    : `CZEKA NA WPŁATĘ · ${timeRemaining}`}
                 </span>
               </div>
             )}

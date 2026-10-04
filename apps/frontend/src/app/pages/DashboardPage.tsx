@@ -18,13 +18,8 @@ import GroupModals, { DialogMode } from "../components/dashboard/GroupModals";
 import GoalDetailsModal from "../components/dashboard/GoalDetailsModal";
 
 export function DashboardPage() {
-  const {
-    activeGroup,
-    groups,
-    groupsLoading,
-    groupsError,
-    reloadGroups,
-  } = useDashboard();
+  const { activeGroup, groups, groupsLoading, groupsError, reloadGroups } =
+    useDashboard();
 
   const [dialog, setDialog] = useState<DialogMode>(null);
   const [showGoal, setShowGoal] = useState(false);
@@ -59,7 +54,10 @@ export function DashboardPage() {
             <h1 className="m-0 text-xl font-semibold text-ink dark:text-white">
               Nie udało się załadować grup
             </h1>
-            <p role="alert" className="mb-0 mt-2 text-sm text-red-600 dark:text-red-300">
+            <p
+              role="alert"
+              className="mb-0 mt-2 text-sm text-red-600 dark:text-red-300"
+            >
               {groupsError}
             </p>
             <button
@@ -67,7 +65,8 @@ export function DashboardPage() {
               className="primary mt-6 inline-flex items-center gap-2 rounded bg-ink px-5 py-3 font-mono text-[10px] tracking-wider text-white"
               onClick={() => void reloadGroups()}
             >
-              SPRÓBUJ PONOWNIE <ArrowRight className="size-4" aria-hidden="true" />
+              SPRÓBUJ PONOWNIE{" "}
+              <ArrowRight className="size-4" aria-hidden="true" />
             </button>
           </section>
         ) : (
@@ -100,7 +99,10 @@ export function DashboardPage() {
                   <span className="grid size-10 place-items-center rounded-lg bg-white/10 text-[#c8f6f9]">
                     <UserRoundPlus className="size-5" aria-hidden="true" />
                   </span>
-                  <ArrowUpRight className="size-4 text-white/60 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
+                  <ArrowUpRight
+                    className="size-4 text-white/60 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                    aria-hidden="true"
+                  />
                 </span>
                 <span className="mt-6">
                   <span className="block font-semibold">Utwórz nową grupę</span>
@@ -119,7 +121,10 @@ export function DashboardPage() {
                   <span className="grid size-10 place-items-center rounded-lg bg-[#eeedfc] text-[#5a54b5] dark:bg-purple-950/60 dark:text-[#bdbbff]">
                     <UsersRound className="size-5" aria-hidden="true" />
                   </span>
-                  <ArrowUpRight className="size-4 text-[#727279] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 dark:text-slate-400" aria-hidden="true" />
+                  <ArrowUpRight
+                    className="size-4 text-[#727279] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 dark:text-slate-400"
+                    aria-hidden="true"
+                  />
                 </span>
                 <span className="mt-6">
                   <span className="block font-semibold">Dołącz do grupy</span>
@@ -167,7 +172,7 @@ export function DashboardPage() {
           aria-hidden="true"
         />
         <span>
-          GRUPA AKTYWNA · Panel Twoich codziennych postępów i wspólnego celu.
+          GRUPA AKTYWNA · Panel Twoich codziennych postępów i wspólnego celu
         </span>
       </div>
 

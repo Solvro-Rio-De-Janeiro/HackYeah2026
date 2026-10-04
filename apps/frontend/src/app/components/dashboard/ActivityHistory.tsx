@@ -1,5 +1,9 @@
-import React from 'react';
-import { useDashboard, money, dailyAmount } from '../../context/DashboardContext';
+import React from "react";
+import {
+  useDashboard,
+  money,
+  dailyAmount,
+} from "../../context/DashboardContext";
 
 export function ActivityHistory() {
   const { activeGroup } = useDashboard();
@@ -15,12 +19,12 @@ export function ActivityHistory() {
           Historia grupy
         </h2>
         <span className="eyebrow muted text-[9px] font-mono tracking-wider uppercase text-[#727279]">
-          ROZLICZENIA · DEMO
+          ROZLICZENIA
         </span>
       </div>
 
       <p className="activity-subtitle text-xs text-[#727279] mb-4">
-        Dzienna kwota: {money(rate)}. Zapisy demo i archiwalne.
+        Dzienna kwota: {money(rate)}
       </p>
 
       {activeGroup.deposits.length ? (
@@ -39,13 +43,14 @@ export function ActivityHistory() {
 
                 <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                   <strong className="text-xs font-semibold text-[#010120]">
-                    {deposit.kind ? 'Symulacja' : 'Zapis archiwalny'} · {money(deposit.amount)}
+                    {deposit.kind ? "Symulacja" : "Zapis archiwalny"} ·{" "}
+                    {money(deposit.amount)}
                   </strong>
                   <p className="text-[11px] text-[#727279] m-0 [overflow-wrap:anywhere]">
-                    {deposit.note || 'Wcześniejszy zapis oszczędności.'}
+                    {deposit.note || "Wcześniejszy zapis oszczędności."}
                   </p>
                   <span className="text-[9px] font-mono text-[#89898f]">
-                    {new Date(deposit.date).toLocaleDateString('pl-PL')}
+                    {new Date(deposit.date).toLocaleDateString("pl-PL")}
                   </span>
                 </div>
               </div>
