@@ -1,3 +1,5 @@
+import logging
+
 import stripe
 from core.settings import settings
 from fastapi import HTTPException, status
@@ -8,7 +10,7 @@ from goals.goal_repository import GoalRepository
 from goals.models import Goal
 from goals.schemas import CreateGoalRequest
 from payments.models import Subscription, SubscriptionInterval, SubscriptionStatus
-from connect.service import create_goal_stripe_accounts
+from connect.service import create_goal_stripe_accounts, ensure_transfer_capability
 from user_group.repository import UserGroupRepository
 
 
@@ -17,6 +19,8 @@ GOAL_PERIOD_INTERVALS = {
     "weekly": SubscriptionInterval.WEEK,
     "monthly": SubscriptionInterval.MONTH,
 }
+
+logger = logging.getLogger(__name__)
 
 
 class CreateGoalHandler:
@@ -68,6 +72,7 @@ class CreateGoalHandler:
             collection_account_id, completion_account_id = await create_goal_stripe_accounts(
                 goal.id
             )
+            await ensure_transfer_capability(collection_account_id)
             goal.collection_stripe_account_id = collection_account_id
             goal.completion_stripe_account_id = completion_account_id
             await self.session.commit()
@@ -105,11 +110,22 @@ class CreateGoalHandler:
                     api_key=settings.stripe_secret_key,
                     idempotency_key=f"subscription-checkout-{subscription.id}",
                 )
+                if not checkout.url:
+                    raise HTTPException(
+                        status_code=502,
+                        detail="Stripe did not return a Checkout URL",
+                    )
                 subscription.stripe_checkout_session_id = checkout.id
+                checkout_urls.append(checkout.url)
 
             await self.session.commit()
         except (stripe.StripeError, HTTPException) as error:
             await self.session.rollback()
+            logger.exception(
+                "Stripe initialization failed while creating goal %s: %s",
+                goal.id,
+                getattr(error, "detail", str(error)),
+            )
             raise HTTPException(
                 status_code=502,
                 detail="Could not initialize Stripe accounts or Checkout sessions for goal",
