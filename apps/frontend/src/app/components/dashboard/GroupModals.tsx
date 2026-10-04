@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useDashboard } from '../../context/DashboardContext';
-import { Group } from '../../types';
 import Modal from '../common/Modal';
 
 export type DialogMode = 'create' | 'join' | 'invite' | 'goal' | null;
@@ -12,8 +11,14 @@ interface GroupModalsProps {
 }
 
 export function GroupModals({ dialog, onClose, onFeedback }: GroupModalsProps) {
-  const { groups, activeGroup, updateGroups, selectGroup, setGoal: setContextGoal } = useDashboard();
+  const {
+    activeGroup,
+    createGroup,
+    joinGroup,
+    setGoal: setContextGoal,
+  } = useDashboard();
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState('');
   const [goal, setGoal] = useState('');
   const [target, setTarget] = useState('');
@@ -33,7 +38,7 @@ export function GroupModals({ dialog, onClose, onFeedback }: GroupModalsProps) {
 
   if (!dialog) return null;
 
-  function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError('');
 
@@ -63,55 +68,57 @@ export function GroupModals({ dialog, onClose, onFeedback }: GroupModalsProps) {
     }
 
     if (dialog === 'create') {
-      const targetVal = target.trim() ? Number(target.replace(',', '.')) : 0;
-      const dailyVal = Number(daily.replace(',', '.'));
-
-      if (!Number.isFinite(dailyVal) || dailyVal < 0.01 || dailyVal > 1000000) {
-        setError('Dzienna kwota musi wynosić od 0,01 do 1 000 000 zł.');
-        return;
-      }
-
       if (!name.trim()) {
         setError('Wpisz nazwę grupy.');
         return;
       }
 
-      const created: Group = {
-        id: crypto.randomUUID(),
-        name: name.trim(),
-        goal: goal.trim(),
-        target: Number.isFinite(targetVal) && targetVal > 0 ? targetVal : 0,
-        dailyAmount: Math.round(dailyVal * 100) / 100,
-        code: crypto.randomUUID().slice(0, 8).toUpperCase(),
-        demo: false,
-        deposits: []
-      };
-
-      updateGroups([...groups, created]);
-      selectGroup(created.id);
-      setName('');
-      setGoal('');
-      setTarget('');
-      setDaily('30');
-      onFeedback('Twoja nowa grupa jest gotowa.');
-      onClose();
+      setIsSubmitting(true);
+      try {
+        await createGroup(name.trim());
+        setName('');
+        setGoal('');
+        setTarget('');
+        setDaily('30');
+        onFeedback('Grupa została utworzona i zapisana na serwerze.');
+        onClose();
+      } catch (submitError) {
+        setError(
+          submitError instanceof Error
+            ? submitError.message
+            : 'Nie udało się utworzyć grupy.',
+        );
+      } finally {
+        setIsSubmitting(false);
+      }
     } else if (dialog === 'join') {
-      const found = groups.find((item) => item.code === code.trim().toUpperCase());
-      if (!found) {
-        setError('Nie znaleziono kodu grupy w tej przeglądarce.');
+      if (!code.trim()) {
+        setError('Wpisz identyfikator grupy.');
         return;
       }
-      selectGroup(found.id);
-      setCode('');
-      onFeedback('Otworzono grupę.');
-      onClose();
+
+      setIsSubmitting(true);
+      try {
+        const joined = await joinGroup(code.trim());
+        setCode('');
+        onFeedback(`Dołączono do grupy „${joined.name}”.`);
+        onClose();
+      } catch (submitError) {
+        setError(
+          submitError instanceof Error
+            ? submitError.message
+            : 'Nie udało się dołączyć do grupy.',
+        );
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   }
 
   async function handleCopyInviteCode() {
     try {
-      await navigator.clipboard.writeText(activeGroup.code);
-      setInviteFeedback('Kod skopiowany.');
+      await navigator.clipboard.writeText(activeGroup.id);
+      setInviteFeedback('Identyfikator grupy skopiowany.');
     } catch {
       setError('Skopiuj kod ręcznie z pola powyżej.');
     }
@@ -135,9 +142,9 @@ export function GroupModals({ dialog, onClose, onFeedback }: GroupModalsProps) {
     >
       {dialog === 'invite' ? (
         <div className="flex flex-col gap-4">
-          <p className="text-xs text-[#727279] dark:text-slate-400 m-0">Kod Twojej grupy:</p>
+          <p className="text-xs text-[#727279] dark:text-slate-400 m-0">Identyfikator grupy z serwera:</p>
           <div className="invite-code bg-[#f4f3fc] dark:bg-white/5 border border-dashed border-[#c5bfdf] dark:border-white/20 p-5 text-center font-mono text-2xl tracking-[3px] select-all rounded text-[#010120] dark:text-white">
-            {activeGroup.code}
+            {activeGroup.id}
           </div>
 
           <button
@@ -149,7 +156,7 @@ export function GroupModals({ dialog, onClose, onFeedback }: GroupModalsProps) {
           </button>
 
           <p className="small-text text-[10px] leading-relaxed text-[#727279] dark:text-slate-400 m-0">
-            Kod pozwala dołączyć innym osobom do Twojej grupy.
+            Udostępnij ten identyfikator osobom, które chcesz zaprosić do grupy.
           </p>
 
           {inviteFeedback && (
@@ -222,6 +229,9 @@ export function GroupModals({ dialog, onClose, onFeedback }: GroupModalsProps) {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {dialog === 'create' ? (
             <>
+              <p className="text-xs text-[#727279] dark:text-slate-400 m-0">
+                Po utworzeniu grupy możesz ustawić jej wspólny cel.
+              </p>
               <label className="flex flex-col gap-1.5 text-xs text-[#17171c] dark:text-white">
                 Nazwa grupy
                 <input
@@ -234,57 +244,20 @@ export function GroupModals({ dialog, onClose, onFeedback }: GroupModalsProps) {
                   className="w-full p-3 border border-[#ebebeb] dark:border-white/10 dark:bg-white/5 rounded text-sm outline-none focus:ring-1 focus:ring-[#7472d5]"
                 />
               </label>
-
-              <label className="flex flex-col gap-1.5 text-xs text-[#17171c] dark:text-white">
-                Tytuł celu grupy (opcjonalnie)
-                <input
-                  value={goal}
-                  onChange={(e) => setGoal(e.target.value)}
-                  placeholder="np. Zdrowie i kondycja"
-                  maxLength={80}
-                  className="w-full p-3 border border-[#ebebeb] dark:border-white/10 dark:bg-white/5 rounded text-sm outline-none focus:ring-1 focus:ring-[#7472d5]"
-                />
-              </label>
-
-              <label className="flex flex-col gap-1.5 text-xs text-[#17171c] dark:text-white">
-                Cel oszczędności (PLN) (opcjonalnie)
-                <input
-                  inputMode="decimal"
-                  value={target}
-                  onChange={(e) => setTarget(e.target.value)}
-                  placeholder="np. 3000"
-                  className="w-full p-3 border border-[#ebebeb] dark:border-white/10 dark:bg-white/5 rounded text-sm outline-none focus:ring-1 focus:ring-[#7472d5]"
-                />
-              </label>
-
-              <label className="flex flex-col gap-1.5 text-xs text-[#17171c] dark:text-white">
-                Dzienna kwota na osobę (PLN)
-                <input
-                  inputMode="decimal"
-                  value={daily}
-                  onChange={(e) => setDaily(e.target.value)}
-                  placeholder="np. 30"
-                  required
-                  className="w-full p-3 border border-[#ebebeb] dark:border-white/10 dark:bg-white/5 rounded text-sm outline-none focus:ring-1 focus:ring-[#7472d5]"
-                />
-                <span className="text-[10px] text-[#727279] dark:text-slate-400">
-                  Stawka obowiązująca każdego członka grupy.
-                </span>
-              </label>
             </>
           ) : (
             <>
               <p className="text-xs text-[#727279] dark:text-slate-400 m-0 leading-relaxed">
-                Wpisz kod grupy, do której chcesz dołączyć.
+                Wpisz identyfikator UUID grupy, do której chcesz dołączyć.
               </p>
 
               <label className="flex flex-col gap-1.5 text-xs text-[#17171c] dark:text-white">
-                Kod grupy
+                Identyfikator grupy
                 <input
                   autoFocus
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
-                  placeholder="ODNOWA"
+                  placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
                   required
                   className="w-full p-3 border border-[#ebebeb] dark:border-white/10 dark:bg-white/5 rounded text-sm uppercase outline-none focus:ring-1 focus:ring-[#7472d5]"
                 />
@@ -300,9 +273,16 @@ export function GroupModals({ dialog, onClose, onFeedback }: GroupModalsProps) {
 
           <button
             type="submit"
+            disabled={isSubmitting}
             className="primary w-full bg-[#010120] text-white hover:bg-[#292943] rounded py-3.5 px-4 font-mono text-xs tracking-wider uppercase flex items-center justify-between cursor-pointer transition-all mt-2"
           >
-            <span>{dialog === 'create' ? 'STWÓRZ GRUPĘ' : 'OTWÓRZ GRUPĘ'}</span>
+            <span>
+              {isSubmitting
+                ? 'ZAPISYWANIE...'
+                : dialog === 'create'
+                  ? 'STWÓRZ GRUPĘ'
+                  : 'DOŁĄCZ DO GRUPY'}
+            </span>
             <span>↗</span>
           </button>
         </form>

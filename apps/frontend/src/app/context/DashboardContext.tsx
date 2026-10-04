@@ -1,16 +1,15 @@
-import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { Group, Incident, ThemeMode, SettingsState, Member } from '../types';
-import { api, getStoredUser } from '../services/api';
+import { api, ApiGroup, getStoredUser } from '../services/api';
 
-export const initialGroup: Group = {
-  id: 'odnowa',
-  name: 'Moja grupa',
+const emptyGroup: Group = {
+  id: '',
+  name: 'Brak grup',
   goal: '',
   target: 0,
   dailyAmount: 30,
-  code: 'ODNOWA',
   demo: false,
-  deposits: []
+  deposits: [],
 };
 
 export function money(value: number): string {
@@ -41,20 +40,18 @@ export function isRealGoal(goal?: string, target?: number): boolean {
   return !mockNames.includes(normalized);
 }
 
-function sanitizeGroups(loaded: Group[]): Group[] {
-  if (!Array.isArray(loaded) || loaded.length === 0) {
-    return [initialGroup];
-  }
-  return loaded.map((group) => {
-    const isMock = !isRealGoal(group.goal, group.target);
-    return {
-      ...group,
-      goal: isMock ? '' : group.goal,
-      target: isMock ? 0 : (group.target || 0),
-      demo: false,
-      deposits: Array.isArray(group.deposits) ? group.deposits : []
-    };
-  });
+function mapApiGroup(group: ApiGroup, cachedGroups: Group[]): Group {
+  const cached = cachedGroups.find((item) => item.id === group.id);
+  return {
+    id: group.id,
+    name: group.name,
+    goal: cached?.goal || '',
+    target: cached?.target || 0,
+    dailyAmount: cached?.dailyAmount ?? 30,
+    demo: false,
+    userGroupId: cached?.userGroupId,
+    deposits: cached?.deposits || [],
+  };
 }
 
 function readSaved<T>(key: string, fallback: T): T {
@@ -80,6 +77,8 @@ interface DashboardContextType {
   currentUser: { name: string; email: string; id?: string } | null;
   setCurrentUser: (user: { name: string; email: string; id?: string } | null) => void;
   groups: Group[];
+  groupsLoading: boolean;
+  groupsError: string | null;
   activeId: string;
   activeGroup: Group;
   incidents: Incident[];
@@ -91,6 +90,9 @@ interface DashboardContextType {
   allDeposits: Array<{ id: string; amount: number; note: string; date: string; kind?: 'subscription-demo' | 'daily-demo' | 'subscription' | 'daily'; group: string }>;
   updateGroups: (next: Group[]) => void;
   selectGroup: (id: string) => void;
+  reloadGroups: () => Promise<void>;
+  createGroup: (name: string) => Promise<Group>;
+  joinGroup: (groupId: string) => Promise<Group>;
   setGoal: (goal: string, target: number, dailyAmount?: number) => void;
   updateIncidents: (next: Incident[]) => void;
   updateSettings: (key: string, value: boolean) => void;
@@ -122,52 +124,17 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     setThemeState(next);
   };
 
-  const [groups, setGroups] = useState<Group[]>(() => {
-    const saved = readSaved<Group[]>('odnowa-groups', [initialGroup]);
-    const cleaned = sanitizeGroups(saved);
-    writeSaved('odnowa-groups', cleaned);
-    return cleaned;
-  });
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [groupsLoading, setGroupsLoading] = useState(
+    () => Boolean(readSaved<{ id?: string } | null>('odnowa-user', null)?.id),
+  );
+  const [groupsError, setGroupsError] = useState<string | null>(null);
+  const groupRequestId = useRef(0);
 
   const [activeId, setActiveId] = useState(() => {
     const saved = readSaved('odnowa-active-group', 'odnowa');
     return saved === 'demo' ? 'odnowa' : saved;
   });
-
-  useEffect(() => {
-    async function syncBackendGroups() {
-      try {
-        const user = getStoredUser();
-        if (!user?.id) return;
-
-        const backendGroups = await api.getUserGroups(user.id);
-        if (Array.isArray(backendGroups) && backendGroups.length > 0) {
-          setGroups((prev) => {
-            const prevMap = new Map(prev.map((g) => [g.id, g]));
-            const next = backendGroups.map((bg) => {
-              const existing = prevMap.get(bg.id);
-              if (existing) {
-                return { ...existing, name: bg.name };
-              }
-              return {
-                id: bg.id,
-                name: bg.name,
-                goal: '',
-                target: 0,
-                dailyAmount: 30,
-                code: bg.id.slice(0, 8).toUpperCase(),
-                demo: false,
-                deposits: []
-              };
-            });
-            writeSaved('odnowa-groups', next);
-            return next;
-          });
-        }
-      } catch {}
-    }
-    syncBackendGroups();
-  }, []);
 
   const [settings, setSettings] = useState<SettingsState>(() =>
     readSaved('odnowa-settings', {
@@ -190,7 +157,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   );
 
   const activeGroup = useMemo(() => {
-    return groups.find(group => group.id === activeId) || groups[0] || initialGroup;
+    return groups.find(group => group.id === activeId) || groups[0] || emptyGroup;
   }, [groups, activeId]);
 
   const personalTotal = useMemo(() => {
@@ -209,6 +176,104 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<{ name: string; email: string; id?: string } | null>(() =>
     readSaved<{ name: string; email: string; id?: string } | null>('odnowa-user', null)
   );
+
+  const reloadGroups = useCallback(async () => {
+    if (!currentUser?.id) {
+      setGroups([]);
+      setGroupsLoading(false);
+      return;
+    }
+
+    setGroupsLoading(true);
+    setGroupsError(null);
+    const requestId = ++groupRequestId.current;
+    try {
+      const backendGroups = await api.getUserGroups(currentUser.id);
+      if (requestId !== groupRequestId.current) return;
+      const cachedGroups = readSaved<Group[]>('odnowa-groups', []);
+      const next = backendGroups.map((group) => mapApiGroup(group, cachedGroups));
+      setGroups(next);
+      writeSaved('odnowa-groups', next);
+      setActiveId((current) => {
+        const nextId = next.some((group) => group.id === current)
+          ? current
+          : next[0]?.id || '';
+        writeSaved('odnowa-active-group', nextId);
+        return nextId;
+      });
+    } catch (error) {
+      if (requestId !== groupRequestId.current) return;
+      setGroupsError(
+        error instanceof Error
+          ? error.message
+          : 'Nie udało się pobrać grup z serwera.',
+      );
+    } finally {
+      if (requestId === groupRequestId.current) {
+        setGroupsLoading(false);
+      }
+    }
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    void reloadGroups();
+  }, [reloadGroups]);
+
+  const createGroup = async (name: string): Promise<Group> => {
+    if (!currentUser?.id) {
+      throw new Error('Zaloguj się, aby utworzyć grupę.');
+    }
+
+    const created = await api.createGroup(name);
+    let membership;
+    try {
+      membership = await api.addUserToGroup(currentUser.id, created.id);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Nie udało się dołączyć do grupy.';
+      throw new Error(`${message} ID utworzonej grupy: ${created.id}`);
+    }
+
+    const group: Group = {
+      id: created.id,
+      name: created.name,
+      goal: '',
+      target: 0,
+      dailyAmount: 30,
+      demo: false,
+      userGroupId: membership.id,
+      deposits: [],
+    };
+    groupRequestId.current += 1;
+    const next = [...groups.filter((item) => item.id !== group.id), group];
+    setGroups(next);
+    setGroupsError(null);
+    writeSaved('odnowa-groups', next);
+    selectGroup(group.id);
+    return group;
+  };
+
+  const joinGroup = async (groupId: string): Promise<Group> => {
+    if (!currentUser?.id) {
+      throw new Error('Zaloguj się, aby dołączyć do grupy.');
+    }
+    const remoteGroup = await api.getGroup(groupId);
+    const membership = await api.addUserToGroup(currentUser.id, remoteGroup.id);
+    const group = mapApiGroup(
+      remoteGroup,
+      readSaved<Group[]>('odnowa-groups', []),
+    );
+    group.userGroupId = membership.id;
+    groupRequestId.current += 1;
+    const next = groups.some((item) => item.id === group.id)
+      ? groups.map((item) => (item.id === group.id ? group : item))
+      : [...groups, group];
+    setGroups(next);
+    setGroupsError(null);
+    writeSaved('odnowa-groups', next);
+    selectGroup(group.id);
+    return group;
+  };
 
   const members = useMemo<Member[]>(() => {
     const name = currentUser?.name?.trim() || (currentUser?.email ? currentUser.email.split('@')[0] : 'Twój profil');
@@ -298,6 +363,8 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         currentUser,
         setCurrentUser,
         groups,
+        groupsLoading,
+        groupsError,
         activeId,
         activeGroup,
         incidents,
@@ -309,6 +376,9 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         allDeposits,
         updateGroups,
         selectGroup,
+        reloadGroups,
+        createGroup,
+        joinGroup,
         setGoal,
         updateIncidents,
         updateSettings,

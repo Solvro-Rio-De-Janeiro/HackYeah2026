@@ -88,6 +88,15 @@ export interface ApiGroup {
   name: string;
 }
 
+async function getApiError(response: Response, fallback: string): Promise<string> {
+  try {
+    const body = await response.json();
+    return body.detail || body.message || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export interface ApiUserGroup {
   id: string;
   user_id: string;
@@ -143,7 +152,19 @@ export const api = {
       headers: authHeaders(),
     });
     if (!res.ok) {
-      throw new Error("Nie udało się pobrać grup użytkownika.");
+      throw new Error(
+        await getApiError(res, "Nie udało się pobrać grup użytkownika."),
+      );
+    }
+    return res.json();
+  },
+
+  async getGroup(groupId: string): Promise<ApiGroup> {
+    const res = await fetch(`${API_URL}/api/group/${groupId}`, {
+      headers: authHeaders(),
+    });
+    if (!res.ok) {
+      throw new Error(await getApiError(res, "Nie znaleziono takiej grupy."));
     }
     return res.json();
   },
@@ -155,7 +176,7 @@ export const api = {
       body: JSON.stringify({ name }),
     });
     if (!res.ok) {
-      throw new Error("Nie udało się utworzyć grupy.");
+      throw new Error(await getApiError(res, "Nie udało się utworzyć grupy."));
     }
     return res.json();
   },
@@ -167,7 +188,7 @@ export const api = {
       body: JSON.stringify({ user_id: userId, group_id: groupId }),
     });
     if (!res.ok) {
-      throw new Error("Nie udało się dołączyć do grupy.");
+      throw new Error(await getApiError(res, "Nie udało się dołączyć do grupy."));
     }
     return res.json();
   },

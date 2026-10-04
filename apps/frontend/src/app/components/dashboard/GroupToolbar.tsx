@@ -7,7 +7,7 @@ interface GroupToolbarProps {
 }
 
 export function GroupToolbar({ onOpenJoin, onOpenCreate }: GroupToolbarProps) {
-  const { groups, activeGroup, selectGroup } = useDashboard();
+  const { groups, groupsLoading, activeGroup, selectGroup } = useDashboard();
 
   return (
     <div className="group-toolbar flex items-center justify-between gap-4 my-2 mb-6">
@@ -19,8 +19,14 @@ export function GroupToolbar({ onOpenJoin, onOpenCreate }: GroupToolbarProps) {
           aria-label="Wybierz grupę"
           value={activeGroup.id}
           onChange={(e) => selectGroup(e.target.value)}
+          disabled={groupsLoading || groups.length === 0}
           className="font-semibold text-base bg-white dark:bg-transparent border-0 text-[#010120] dark:text-white cursor-pointer outline-none focus:ring-1 focus:ring-[#7472d5] rounded pr-6"
         >
+          {groups.length === 0 && (
+            <option value="" disabled>
+              {groupsLoading ? 'Ładowanie grup...' : 'Brak grup'}
+            </option>
+          )}
           {groups.map((item) => (
             <option key={item.id} value={item.id} className="dark:bg-[#161622] dark:text-white">
               {item.name}

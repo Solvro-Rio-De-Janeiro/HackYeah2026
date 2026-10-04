@@ -12,7 +12,6 @@ export type Group = {
   goal?: string;
   target?: number;
   dailyAmount?: number;
-  code: string;
   demo?: boolean;
   userGroupId?: string;
   deposits: Deposit[];

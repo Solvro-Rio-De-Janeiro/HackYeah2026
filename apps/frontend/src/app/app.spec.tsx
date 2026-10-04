@@ -10,15 +10,28 @@ const authenticatedUser = {
   role: 'user',
 };
 
-function setValidSession() {
+const backendGroup = {
+  id: '11111111-1111-4111-8111-111111111111',
+  name: 'Moja grupa',
+};
+
+function setValidSession(groups = [backendGroup]) {
   localStorage.setItem('odnowa-auth-token', 'test-token');
   localStorage.setItem('odnowa-user', JSON.stringify(authenticatedUser));
   vi.stubGlobal(
     'fetch',
-    vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => authenticatedUser,
+    vi.fn().mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      return {
+        ok: true,
+        status: 200,
+        json: async () =>
+          url.endsWith('/api/auth/me')
+            ? authenticatedUser
+            : url.includes('/api/user-group/user/')
+              ? groups
+              : authenticatedUser,
+      };
     }),
   );
 }
@@ -128,6 +141,86 @@ describe('App', () => {
     expect(await screen.findByLabelText('Sober Home')).toBeTruthy();
     expect(screen.getAllByText('Moja grupa').length).toBeGreaterThan(0);
     expect(screen.getByText('Przyłapania')).toBeTruthy();
+  });
+
+  it('should show the empty state when the backend returns no groups', async () => {
+    setValidSession([]);
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    expect(
+      await screen.findByText('Nie należysz jeszcze do żadnej grupy'),
+    ).toBeTruthy();
+    expect(screen.getByRole('button', { name: /STWÓRZ GRUPĘ/i })).toBeTruthy();
+  });
+
+  it('should create a group and add the current user through backend endpoints', async () => {
+    localStorage.setItem('odnowa-auth-token', 'test-token');
+    localStorage.setItem('odnowa-user', JSON.stringify(authenticatedUser));
+    const createdGroup = {
+      id: '22222222-2222-4222-8222-222222222222',
+      name: 'Nowy początek',
+    };
+    const fetchMock = vi.fn().mockImplementation(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.endsWith('/api/auth/me')) {
+          return { ok: true, status: 200, json: async () => authenticatedUser };
+        }
+        if (url.includes('/api/user-group/user/')) {
+          return { ok: true, status: 200, json: async () => [] };
+        }
+        if (url.endsWith('/api/group') && init?.method === 'POST') {
+          return { ok: true, status: 200, json: async () => createdGroup };
+        }
+        if (url.endsWith('/api/user-group') && init?.method === 'POST') {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({
+              id: '33333333-3333-4333-8333-333333333333',
+              user_id: authenticatedUser.id,
+              group_id: createdGroup.id,
+              completions: [],
+              active: true,
+            }),
+          };
+        }
+        throw new Error(`Unexpected request: ${url}`);
+      },
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: /STWÓRZ GRUPĘ/i }));
+    fireEvent.change(screen.getByPlaceholderText('np. Ekipa nowego początku'), {
+      target: { value: createdGroup.name },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /STWÓRZ GRUPĘ/i }));
+
+    expect(await screen.findAllByText(createdGroup.name)).not.toHaveLength(0);
+    const createRequest = fetchMock.mock.calls.find(
+      ([url, init]) => String(url).endsWith('/api/group') && init?.method === 'POST',
+    );
+    const membershipRequest = fetchMock.mock.calls.find(
+      ([url, init]) =>
+        String(url).endsWith('/api/user-group') && init?.method === 'POST',
+    );
+    expect(JSON.parse(String(createRequest?.[1]?.body))).toEqual({
+      name: createdGroup.name,
+    });
+    expect(JSON.parse(String(membershipRequest?.[1]?.body))).toEqual({
+      user_id: authenticatedUser.id,
+      group_id: createdGroup.id,
+    });
   });
 
   it('should clear the session and redirect to login on logout', async () => {
