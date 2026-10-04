@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { LogOut, User } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDashboard } from "../../context/DashboardContext";
-import { clearStoredAuth, getStoredUser, isAuthenticated } from "../../auth";
+import { clearStoredAuth, getStoredUser } from "../../auth";
 
 interface HeaderProps {
   onProfile?: () => void;
@@ -12,16 +12,14 @@ export function Header({ onProfile }: HeaderProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser, setCurrentUser } = useDashboard();
-  const [hasAuthToken, setHasAuthToken] = useState(isAuthenticated);
 
   const displayName = currentUser?.name?.trim();
   const firstName = displayName ? displayName.split(" ")[0] : null;
   const isProfileActive = location.pathname === "/profile";
-  const loggedIn = hasAuthToken && Boolean(currentUser?.email);
+  const loggedIn = Boolean(currentUser?.email);
 
   useEffect(() => {
     function syncAuthState() {
-      setHasAuthToken(isAuthenticated());
       setCurrentUser(
         getStoredUser<{ name: string; email: string; id?: string }>(),
       );
@@ -33,7 +31,6 @@ export function Header({ onProfile }: HeaderProps) {
 
   function handleLogout() {
     clearStoredAuth();
-    setHasAuthToken(false);
     setCurrentUser(null);
     navigate("/login");
   }

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import { Group, Incident, ThemeMode, SettingsState, Member } from '../types';
-import { api } from '../services/api';
+import { api, getStoredUser } from '../services/api';
 
 export const initialGroup: Group = {
   id: 'odnowa',
@@ -137,11 +137,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function syncBackendGroups() {
       try {
-        if (typeof localStorage === 'undefined') return;
-        const token = localStorage.getItem('odnowa-auth-token');
-        const userRaw = localStorage.getItem('odnowa-user');
-        if (!token || !userRaw) return;
-        const user = JSON.parse(userRaw);
+        const user = getStoredUser();
         if (!user?.id) return;
 
         const backendGroups = await api.getUserGroups(user.id);
@@ -213,22 +209,6 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<{ name: string; email: string; id?: string } | null>(() =>
     readSaved<{ name: string; email: string; id?: string } | null>('odnowa-user', null)
   );
-
-  useEffect(() => {
-    async function loadUser() {
-      try {
-        if (typeof localStorage === 'undefined') return;
-        const token = localStorage.getItem('odnowa-auth-token');
-        if (!token) return;
-        const me = await api.getMe();
-        if (me) {
-          setCurrentUser(me);
-          writeSaved('odnowa-user', me);
-        }
-      } catch {}
-    }
-    loadUser();
-  }, []);
 
   const members = useMemo<Member[]>(() => {
     const name = currentUser?.name?.trim() || (currentUser?.email ? currentUser.email.split('@')[0] : 'Twój profil');

@@ -1,87 +1,31 @@
+import {
+  clearStoredAuth as clearAuthSession,
+  getAuthToken,
+  getStoredUser as readStoredUser,
+  setAuthToken,
+  setStoredUser as writeStoredUser,
+} from "../auth";
+
 const API_URL = import.meta.env.VITE_API_URL || "";
 
-const memoryStore = new Map<string, string>();
-
-function getStorage(): Storage | null {
-  try {
-    if (typeof window !== "undefined" && window.localStorage) {
-      return window.localStorage;
-    }
-    if (typeof localStorage !== "undefined" && localStorage) {
-      return localStorage;
-    }
-  } catch {}
-  return null;
-}
-
-function safeGet(key: string): string | null {
-  const s = getStorage();
-  if (s) {
-    try {
-      const val = s.getItem(key);
-      if (val !== null) return val;
-    } catch {}
-  }
-  return memoryStore.get(key) ?? null;
-}
-
-function safeSet(key: string, value: string): void {
-  const s = getStorage();
-  if (s) {
-    try {
-      s.setItem(key, value);
-    } catch {}
-  }
-  memoryStore.set(key, value);
-}
-
-function safeRemove(key: string): void {
-  const s = getStorage();
-  if (s) {
-    try {
-      s.removeItem(key);
-    } catch {}
-  }
-  memoryStore.delete(key);
-}
-
 export function getStoredToken(): string | null {
-  return safeGet("odnowa-auth-token");
+  return getAuthToken();
 }
 
 export function setStoredToken(token: string | null): void {
-  if (token) {
-    safeSet("odnowa-auth-token", token);
-  } else {
-    safeRemove("odnowa-auth-token");
-  }
-}
-
-export function isAuthenticated(): boolean {
-  const token = getStoredToken();
-  return Boolean(token && token.trim().length > 0);
+  setAuthToken(token);
 }
 
 export function clearStoredAuth(): void {
-  safeRemove("odnowa-auth-token");
-  safeRemove("odnowa-user");
+  clearAuthSession();
 }
 
 export function getStoredUser(): CurrentUser | null {
-  try {
-    const raw = safeGet("odnowa-user");
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
+  return readStoredUser<CurrentUser>();
 }
 
 export function setStoredUser(user: CurrentUser | null): void {
-  if (user) {
-    safeSet("odnowa-user", JSON.stringify(user));
-  } else {
-    safeRemove("odnowa-user");
-  }
+  writeStoredUser(user);
 }
 
 function authHeaders(): Record<string, string> {
@@ -102,10 +46,20 @@ export interface CurrentUser {
   role: string;
 }
 
+export class UnauthorizedError extends Error {
+  constructor() {
+    super("Sesja wygasła. Zaloguj się ponownie.");
+    this.name = "UnauthorizedError";
+  }
+}
+
 export async function fetchMe(): Promise<CurrentUser> {
   const res = await fetch(`${API_URL}/api/auth/me`, {
     headers: authHeaders(),
   });
+  if (res.status === 401 || res.status === 403) {
+    throw new UnauthorizedError();
+  }
   if (!res.ok) {
     throw new Error("Nie można pobrać profilu");
   }
@@ -182,10 +136,6 @@ export const api = {
       throw new Error(err.detail || err.message || "Błąd logowania");
     }
     return res.json();
-  },
-
-  async getMe(): Promise<CurrentUser> {
-    return fetchMe();
   },
 
   async getUserGroups(userId: string): Promise<ApiGroup[]> {

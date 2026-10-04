@@ -1,39 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { useDashboard, money } from '../context/DashboardContext';
-import Icon from '../components/common/Icon';
-import Modal from '../components/common/Modal';
-import {
-  api,
-  CurrentUser,
-  AccountStatusResponse,
-  getStoredToken,
-  getStoredUser,
-  setStoredUser,
-  clearStoredAuth,
-} from '../services/api';
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useDashboard, money } from "../context/DashboardContext";
+import Icon from "../components/common/Icon";
+import Modal from "../components/common/Modal";
+import { api, AccountStatusResponse } from "../services/api";
 
 export function ProfilePage() {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const {
     currentUser,
-    setCurrentUser,
     settings,
     allDeposits,
     clearHistory,
-    exportReport
+    exportReport,
   } = useDashboard();
 
   const [resetModal, setResetModal] = useState(false);
-  const [user, setUser] = useState<CurrentUser | null>(() => {
-    return (currentUser as CurrentUser | null) || getStoredUser();
-  });
-  const [connectStatus, setConnectStatus] = useState<AccountStatusResponse | null>(null);
+  const [connectStatus, setConnectStatus] =
+    useState<AccountStatusResponse | null>(null);
   const [connectLoading, setConnectLoading] = useState(false);
   const [connectFeedback, setConnectFeedback] = useState<string | null>(() => {
-    if (searchParams.get('connect') === 'return') {
-      return 'Konto Stripe Connect zostało pomyślnie zsynchronizowane.';
+    if (searchParams.get("connect") === "return") {
+      return "Konto Stripe Connect zostało pomyślnie zsynchronizowane.";
     }
     return null;
   });
@@ -41,74 +29,60 @@ export function ProfilePage() {
   const total = allDeposits.reduce((sum, deposit) => sum + deposit.amount, 0);
 
   useEffect(() => {
-    if (currentUser) {
-      setUser(currentUser as CurrentUser);
-    }
-  }, [currentUser]);
-
-  useEffect(() => {
-    const token = getStoredToken();
-    if (!token) return;
-
+    if (!currentUser?.id) return;
+    let active = true;
     api
-      .getMe()
-      .then((me) => {
-        setUser(me);
-        setStoredUser(me);
-        setCurrentUser(me);
-        if (me.id) {
-          api
-            .getUserAccountStatus(me.id)
-            .then(setConnectStatus)
-            .catch(() => {});
-        }
+      .getUserAccountStatus(currentUser.id)
+      .then((status) => {
+        if (active) setConnectStatus(status);
       })
-      .catch(() => {});
-  }, [setCurrentUser]);
+      .catch((error: unknown) => {
+        if (active) {
+          setConnectFeedback(
+            error instanceof Error
+              ? error.message
+              : "Nie udało się pobrać statusu konta Stripe.",
+          );
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [currentUser?.id]);
 
   async function handleConnectOnboarding() {
-    if (!user?.id) {
-      setConnectFeedback('Zaloguj się, aby połączyć konto Stripe.');
+    if (!currentUser?.id) {
+      setConnectFeedback("Nie udało się pobrać danych profilu.");
       return;
     }
     setConnectLoading(true);
     setConnectFeedback(null);
     try {
-      const res = await api.startUserOnboarding(user.id);
+      const res = await api.startUserOnboarding(currentUser.id);
       if (res.onboarding_url) {
         window.location.href = res.onboarding_url;
       }
     } catch (err: unknown) {
-      setConnectFeedback(err instanceof Error ? err.message : 'Nie udało się uruchomić onboardingu.');
+      setConnectFeedback(
+        err instanceof Error
+          ? err.message
+          : "Nie udało się uruchomić onboardingu.",
+      );
     } finally {
       setConnectLoading(false);
     }
   }
 
-  function handleLogout() {
-    clearStoredAuth();
-    setUser(null);
-    setCurrentUser(null);
-    setConnectStatus(null);
-    document.documentElement.dataset.theme = 'light';
-    try {
-      localStorage.setItem('odnowa-theme', JSON.stringify('light'));
-    } catch {}
-    navigate('/login');
-  }
-
-  const isUserAuthenticated = Boolean(user && user.email);
-  const displayName = user?.name?.trim() || (isUserAuthenticated ? 'Użytkownik' : 'Twój profil');
-  const displayEmail = user?.email || null;
-  const initials = isUserAuthenticated
-    ? displayName
-        .split(' ')
-        .filter(Boolean)
-        .map((part) => part[0])
-        .slice(0, 2)
-        .join('')
-        .toUpperCase() || 'U'
-    : 'SO';
+  const displayName = currentUser?.name.trim() || "Twój profil";
+  const displayEmail = currentUser?.email || null;
+  const initials =
+    displayName
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() || "U";
 
   return (
     <section className="secondary-page profile-page max-w-[760px] mx-auto py-10 min-h-[650px]">
@@ -126,34 +100,6 @@ export function ProfilePage() {
         </p>
       )}
 
-      {/* Guest notice if not logged in */}
-      {!isUserAuthenticated && (
-        <div className="bg-[#f0f0f5] dark:bg-white/5 border border-[#e1e1e8] dark:border-white/10 p-4 rounded-xl mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <strong className="text-sm font-semibold text-[#010120] dark:text-white block mb-0.5">
-              Nie jesteś zalogowany
-            </strong>
-            <p className="text-xs text-[#727279] dark:text-slate-400 m-0">
-              Zaloguj się lub załóż konto, aby zsynchronizować wpłaty i zarządzać profilem grupy.
-            </p>
-          </div>
-          <div className="flex items-center gap-2.5 flex-shrink-0">
-            <Link
-              to="/login"
-              className="primary bg-[#010120] text-white hover:bg-[#292943] px-3.5 py-2 font-mono text-[10px] tracking-wider uppercase rounded no-underline"
-            >
-              Zaloguj się ↗
-            </Link>
-            <Link
-              to="/signup"
-              className="outline border border-[#010120] text-[#010120] dark:border-white/20 dark:text-white px-3.5 py-2 font-mono text-[10px] tracking-wider uppercase rounded no-underline"
-            >
-              Załóż konto ↗
-            </Link>
-          </div>
-        </div>
-      )}
-
       <div className="profile-heading flex items-center justify-between flex-wrap gap-5 my-6">
         <div className="flex items-center gap-5">
           <div
@@ -168,20 +114,10 @@ export function ProfilePage() {
               {displayName}
             </h1>
             <span className="eyebrow muted text-[11px] font-mono tracking-wider uppercase text-[#727279] dark:text-slate-400">
-              {displayEmail ? `${displayEmail} · ` : ''}TWÓJ PROFIL W GRUPIE
+              {displayEmail || ""}
             </span>
           </div>
         </div>
-
-        {isUserAuthenticated && (
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="outline border border-[#ebebeb] dark:border-white/10 px-4 py-2 text-xs font-mono tracking-wider uppercase text-[#4e4e56] hover:text-[#010120] dark:text-[#b0aec5] dark:hover:text-white rounded"
-          >
-            Wyloguj się
-          </button>
-        )}
       </div>
 
       <section aria-label="Statystyki profilu">
@@ -189,7 +125,7 @@ export function ProfilePage() {
         <div className="profile-stats grid grid-cols-2 gap-4 my-8">
           <div className="bg-[#f0f0f2] dark:bg-white/5 rounded p-6 sm:p-8 flex flex-col gap-2 min-w-0">
             <strong className="text-2xl sm:text-4xl font-semibold text-[#010120] dark:text-white [overflow-wrap:anywhere]">
-              {settings.privacy ? '—' : money(total)}
+              {settings.privacy ? "—" : money(total)}
             </strong>
             <span className="eyebrow text-[11px] font-mono tracking-wider uppercase text-[#4e4e56] dark:text-[#b0aec5]">
               SUMA TWOICH WPŁAT
@@ -198,7 +134,7 @@ export function ProfilePage() {
 
           <div className="bg-[#f0f0f2] dark:bg-white/5 rounded p-6 sm:p-8 flex flex-col gap-2 min-w-0">
             <strong className="text-2xl sm:text-4xl font-semibold text-[#010120] dark:text-white [overflow-wrap:anywhere]">
-              {settings.privacy ? '—' : allDeposits.length}
+              {settings.privacy ? "—" : allDeposits.length}
             </strong>
             <span className="eyebrow text-[11px] font-mono tracking-wider uppercase text-[#4e4e56] dark:text-[#b0aec5]">
               ZAPISÓW W HISTORII
@@ -208,7 +144,10 @@ export function ProfilePage() {
       </section>
 
       {settings.privacy && (
-        <p className="preference-hint profile-privacy-hint p-4 bg-[#f4f3ff] dark:bg-purple-950/30 rounded text-xs text-[#59536f] dark:text-purple-300 text-center my-4" role="note">
+        <p
+          className="preference-hint profile-privacy-hint p-4 bg-[#f4f3ff] dark:bg-purple-950/30 rounded text-xs text-[#59536f] dark:text-purple-300 text-center my-4"
+          role="note"
+        >
           Podsumowanie jest ukryte. Możesz je odsłonić w Preferencjach.
         </p>
       )}
@@ -222,11 +161,13 @@ export function ProfilePage() {
           <span
             className={`font-mono text-[9px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded ${
               connectStatus?.transfers_active
-                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
             }`}
           >
-            {connectStatus?.transfers_active ? 'KONTO AKTYWNE ✓' : 'WYMAGA KONFIGURACJI'}
+            {connectStatus?.transfers_active
+              ? "KONTO AKTYWNE ✓"
+              : "WYMAGA KONFIGURACJI"}
           </span>
         </div>
 
@@ -234,26 +175,28 @@ export function ProfilePage() {
           Konto bankowe do odbioru nagród grupy
         </h2>
         <p className="text-xs text-[#727279] dark:text-slate-400 m-0 mb-4 leading-relaxed">
-          Gdy grupa osiągnie swój cel, zebrane środki mogą zostać wypłacone na zakup nagrody bezpośrednio przez Stripe Connect na połączone konto.
+          Gdy grupa osiągnie swój cel, zebrane środki mogą zostać wypłacone na
+          zakup nagrody bezpośrednio przez Stripe Connect na połączone konto.
         </p>
 
         <button
           type="button"
-          disabled={connectLoading || !isUserAuthenticated}
+          disabled={connectLoading}
           onClick={handleConnectOnboarding}
           className="outline border border-[#010120] dark:border-white/20 text-[#010120] dark:text-white hover:bg-[#010120] hover:text-white dark:hover:bg-white dark:hover:text-[#010120] font-mono text-[10px] tracking-wider uppercase py-2.5 px-4 rounded transition-all cursor-pointer disabled:opacity-50"
         >
           {connectLoading
-            ? 'PRZEKIEROWYWANIE DO STRIPE...'
-            : !isUserAuthenticated
-            ? 'ZALOGUJ SIĘ, ABY POŁĄCZYĆ STRIPE ↗'
+            ? "PRZEKIEROWYWANIE DO STRIPE..."
             : connectStatus?.transfers_active
-            ? 'ZARZĄDZAJ KONTEM STRIPE ↗'
-            : 'POŁĄCZ KONTO BANKOWE DO WYPŁAT ↗'}
+              ? "ZARZĄDZAJ KONTEM STRIPE ↗"
+              : "POŁĄCZ KONTO BANKOWE DO WYPŁAT ↗"}
         </button>
       </section>
 
-      <section aria-label="Zarządzanie danymi profilu" className="profile-actions flex flex-col gap-3 my-8">
+      <section
+        aria-label="Zarządzanie danymi profilu"
+        className="profile-actions flex flex-col gap-3 my-8"
+      >
         <h2 className="sr-only">Działania profilu</h2>
         <button
           type="button"
@@ -286,8 +229,8 @@ export function ProfilePage() {
         ariaLabel="Usuń zapisy"
       >
         <p className="text-xs leading-relaxed text-[#727279] mb-6">
-          Usuniesz własne zapisy ze wszystkich lokalnych grup. Możesz wcześniej wyeksportować raport.
-          Ta czynność nie wpływa na Twoje pieniądze.
+          Usuniesz własne zapisy ze wszystkich lokalnych grup. Możesz wcześniej
+          wyeksportować raport. Ta czynność nie wpływa na Twoje pieniądze.
         </p>
 
         <div className="flex flex-col gap-2.5">
