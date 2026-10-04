@@ -45,7 +45,7 @@ Sober łączy trzy mechanizmy, które osobno znamy z psychologii zmiany nawyków
 | **Stawka (commitment device)**             | Regularna wpłata na wspólny cel. Złamanie zobowiązania oznacza utratę wpłat, a nie tylko „zerowanie licznika”.                      |
 | **Nagroda z pozytywnym skutkiem ubocznym** | Wytrwałość kończy się wspólną nagrodą. Porażka nie wzbogaca nikogo z grupy, tylko trafia do fundacji pomagającej osobom w kryzysie. |
 
-**Dlaczego to ma sens:**
+**Jaki to mam wpływ:**
 
 - **Nikt nie zarabia na cudzej porażce.** Pieniądze osoby, która się złamała, trafiają do fundacji, a nie do pozostałych członków. Grupa nie ma interesu, żeby ktoś odpadł, więc wspiera zamiast rywalizować.
 - **Prawdziwe pieniądze, prawdziwe płatności.** Wpłaty są pobierane automatycznie kartą przez Stripe (subskrypcje), a wypłaty realizowane przez Stripe Connect. Nie ma tu wirtualnych punktów.
@@ -399,19 +399,6 @@ Wejdź na **<https://localhost>** i załóż konto.
 Przy pierwszej wizycie przeglądarka ostrzeże o certyfikacie, bo Caddy wystawia lokalnie własny certyfikat dla `localhost`. Wybierz „Zaawansowane” i „Przejdź do localhost”.
 
 Do testowych płatności użyj karty **`4242 4242 4242 4242`** (dowolna przyszła data, dowolny CVC). Karta **`4000 0000 0000 0077`** dodatkowo od razu udostępnia środki na saldzie Stripe, co przydaje się przy testowaniu wypłat.
-
-### Przydatne polecenia
-
-| Polecenie                                             | Działanie                                 |
-| ----------------------------------------------------- | ----------------------------------------- |
-| `docker compose ps`                                   | stan kontenerów                           |
-| `docker compose logs backend --tail 50`               | ostatnie logi backendu                    |
-| `docker compose logs migrate`                         | wynik migracji bazy                       |
-| `docker compose --profile stripe down`                | zatrzymanie aplikacji (dane zostają)      |
-| `docker compose --profile stripe up -d --build`       | ponowne uruchomienie po zmianach w kodzie |
-| `docker compose build --no-cache`                     | przebudowa obrazów od zera                |
-| `docker compose exec db psql -U hackyeah -d hackyeah` | konsola bazy danych                       |
-| `docker compose down -v`                              | **usunięcie aplikacji razem z danymi**    |
 
 ## Konfiguracja `.env`
 
