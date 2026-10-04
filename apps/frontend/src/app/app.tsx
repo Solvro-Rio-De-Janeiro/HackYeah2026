@@ -24,33 +24,44 @@ import {
   UnauthorizedError,
 } from "./services/api";
 
-function RequireAuth() {
-  const [status, setStatus] = useState<
-    "checking" | "authenticated" | "unauthenticated" | "error"
-  >("checking");
+function SessionGuard({
+  mode,
+}: {
+  mode: "authenticated" | "guest";
+}) {
+  const location = useLocation();
+  const token = getStoredToken();
+  const [session, setSession] = useState<{
+    token: string | null;
+    status: "checking" | "authenticated" | "unauthenticated" | "error";
+  }>(() => ({
+    token,
+    status: token ? "checking" : "unauthenticated",
+  }));
 
   useEffect(() => {
     let active = true;
 
     async function validateSession() {
-      if (!getStoredToken()) {
-        setStatus("unauthenticated");
+      if (!token) {
+        setSession({ token: null, status: "unauthenticated" });
         return;
       }
 
+      setSession({ token, status: "checking" });
       try {
         const user = await fetchMe();
         if (!active) return;
         setStoredUser(user);
-        setStatus("authenticated");
+        setSession({ token, status: "authenticated" });
       } catch (error) {
         if (!active) return;
         if (error instanceof UnauthorizedError) {
           clearStoredAuth();
-          setStatus("unauthenticated");
+          setSession({ token, status: "unauthenticated" });
           return;
         }
-        setStatus("error");
+        setSession({ token, status: "error" });
       }
     }
 
@@ -58,23 +69,36 @@ function RequireAuth() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [location.pathname, token]);
 
-  if (status === "unauthenticated") {
-    return <Navigate to="/login" replace />;
-  }
+  const status =
+    session.token === token ? session.status : "checking";
+
   if (status === "error") {
     return (
-      <p role="alert" className="p-6 text-center text-red-600">
-        Nie udało się sprawdzić sesji. Sprawdź połączenie i odśwież stronę.
-      </p>
+      <main className="min-h-screen grid place-items-center p-6">
+        <p role="alert" className="text-center text-red-600">
+          Nie udało się sprawdzić sesji. Sprawdź połączenie i odśwież stronę.
+        </p>
+      </main>
     );
   }
   if (status !== "authenticated") {
-    return <p className="p-6 text-center">Sprawdzanie sesji...</p>;
+    if (status === "checking") {
+      return <p className="p-6 text-center">Sprawdzanie sesji...</p>;
+    }
+    return mode === "authenticated" ? (
+      <Navigate to="/login" replace />
+    ) : (
+      <Outlet />
+    );
   }
 
-  return <Outlet />;
+  return mode === "authenticated" ? (
+    <Outlet />
+  ) : (
+    <Navigate to="/dashboard" replace />
+  );
 }
 
 function DashboardLayout() {
@@ -119,13 +143,15 @@ export function App() {
   return (
     <Routes>
       {/* Auth routes */}
-      <Route element={<AuthLayout />}>
-        <Route path="/signup" element={<SignUpPage />} />
-        <Route path="/login" element={<LoginPage />} />
+      <Route element={<SessionGuard mode="guest" />}>
+        <Route element={<AuthLayout />}>
+          <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/login" element={<LoginPage />} />
+        </Route>
       </Route>
 
       {/* Dashboard routes */}
-      <Route element={<RequireAuth />}>
+      <Route element={<SessionGuard mode="authenticated" />}>
         <Route element={<DashboardLayout />}>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />

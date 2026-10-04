@@ -1,3 +1,5 @@
+import logging
+
 import stripe
 from core.settings import settings
 from fastapi import HTTPException, status
@@ -17,6 +19,8 @@ GOAL_PERIOD_INTERVALS = {
     "weekly": SubscriptionInterval.WEEK,
     "monthly": SubscriptionInterval.MONTH,
 }
+
+logger = logging.getLogger(__name__)
 
 
 class CreateGoalHandler:
@@ -105,6 +109,11 @@ class CreateGoalHandler:
                     api_key=settings.stripe_secret_key,
                     idempotency_key=f"subscription-checkout-{subscription.id}",
                 )
+                if not checkout.url:
+                    raise HTTPException(
+                        status_code=502,
+                        detail="Stripe did not return a Checkout URL",
+                    )
                 subscription.stripe_checkout_session_id = checkout.id
                 if checkout.url:
                     checkout_urls.append(checkout.url)
@@ -112,6 +121,11 @@ class CreateGoalHandler:
             await self.session.commit()
         except (stripe.StripeError, HTTPException) as error:
             await self.session.rollback()
+            logger.exception(
+                "Stripe initialization failed while creating goal %s: %s",
+                goal.id,
+                getattr(error, "detail", str(error)),
+            )
             raise HTTPException(
                 status_code=502,
                 detail="Could not initialize Stripe Checkout sessions for goal",
