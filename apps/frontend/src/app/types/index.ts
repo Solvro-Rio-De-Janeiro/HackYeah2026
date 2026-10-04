@@ -3,17 +3,18 @@ export type Deposit = {
   amount: number;
   note: string;
   date: string;
-  kind?: 'subscription-demo' | 'daily-demo';
+  kind?: 'subscription-demo' | 'daily-demo' | 'subscription' | 'daily';
 };
 
 export type Group = {
   id: string;
   name: string;
-  goal: string;
-  target: number;
+  goal?: string;
+  target?: number;
   dailyAmount?: number;
   code: string;
-  demo: boolean;
+  demo?: boolean;
+  userGroupId?: string;
   deposits: Deposit[];
 };
 

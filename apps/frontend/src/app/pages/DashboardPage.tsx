@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDashboard, money, dailyAmount } from '../context/DashboardContext';
+import { useDashboard } from '../context/DashboardContext';
 import GroupToolbar from '../components/dashboard/GroupToolbar';
 import SavingsHero from '../components/dashboard/SavingsHero';
 import DailyAmountPanel from '../components/dashboard/DailyAmountPanel';
@@ -19,8 +19,6 @@ export function DashboardPage() {
   const [showGoal, setShowGoal] = useState(false);
   const [feedback, setFeedback] = useState('');
 
-  const rate = dailyAmount(activeGroup);
-
   return (
     <div className="dashboard-page max-w-[1116px] mx-auto py-2">
       <GroupToolbar
@@ -28,34 +26,37 @@ export function DashboardPage() {
         onOpenJoin={() => setDialog('join')}
       />
 
-      <SavingsHero onShowGoal={() => setShowGoal(true)} />
+      <SavingsHero
+        onShowGoal={() => setShowGoal(true)}
+        onAddGoal={() => setDialog('goal')}
+        onOpenCreate={() => setDialog('create')}
+      />
 
       <div
-        className="demo-notice flex items-center gap-2 font-mono text-[11px] text-[#727279] my-4 leading-relaxed"
+        className="demo-notice flex items-center gap-2 font-mono text-[11px] text-[#727279] dark:text-slate-400 my-4 leading-relaxed"
         role="region"
         aria-label="Informacja o grupie"
       >
-        <span className="small-dot w-1.5 h-1.5 rounded-full bg-[#9491bb] flex-shrink-0" aria-hidden="true" />
+        <span className="small-dot w-1.5 h-1.5 rounded-full bg-[#85ebcf] flex-shrink-0" aria-hidden="true" />
         <span>
-          {activeGroup.demo ? 'GRUPA DEMONSTRACYJNA' : 'GRUPA LOKALNA'} · Dane zapisują się w tej przeglądarce.
-          Synchronizacja między osobami nie jest jeszcze podłączona.
+          GRUPA AKTYWNA · Panel Twoich codziennych postępów i wspólnego celu.
         </span>
       </div>
 
       <DailyAmountPanel />
 
       {feedback && (
-        <p className="save-feedback bg-[#edf9f3] text-[#285342] p-3 text-xs rounded my-3" role="status" aria-live="polite">
+        <p className="save-feedback bg-[#edf9f3] dark:bg-emerald-950/40 text-[#285342] dark:text-emerald-300 p-3 text-xs rounded my-3" role="status" aria-live="polite">
           ✓ {feedback}
         </p>
       )}
 
       <section aria-labelledby="rhythm-heading">
         <div className="section-heading flex items-center justify-between my-8">
-          <h2 id="rhythm-heading" className="text-xl font-semibold tracking-tight text-[#010120] m-0">
+          <h2 id="rhythm-heading" className="text-xl font-semibold tracking-tight text-[#010120] dark:text-white m-0">
             Stały rytm. Wspólny kierunek.
           </h2>
-          <span className="eyebrow muted text-[11px] font-mono tracking-wider uppercase text-[#727279]">
+          <span className="eyebrow muted text-[11px] font-mono tracking-wider uppercase text-[#727279] dark:text-slate-400">
             BEZ PRESJI. Z WSPARCIEM.
           </span>
         </div>
@@ -64,6 +65,8 @@ export function DashboardPage() {
           <GoalCard
             onShowGoal={() => setShowGoal(true)}
             onOpenInvite={() => setDialog('invite')}
+            onAddGoal={() => setDialog('goal')}
+            onOpenCreate={() => setDialog('create')}
           />
           <HistoryPreviewCard />
         </div>
@@ -73,16 +76,6 @@ export function DashboardPage() {
         <MembersList onOpenInvite={() => setDialog('invite')} />
         <ActivityHistory />
       </section>
-
-      <blockquote className="quote flex items-center gap-3.5 my-8 text-[#555560]">
-        <span className="text-4xl text-[#b3b0d9] leading-none" aria-hidden="true">“</span>
-        <p className="text-xs m-0 text-[#17171c]">
-          Codziennie {money(rate)}. Razem budujecie motywację.
-        </p>
-        <cite className="eyebrow muted text-[11px] font-mono tracking-wider uppercase text-[#727279] ml-auto not-italic">
-          TAK DZIAŁA ODNOWA
-        </cite>
-      </blockquote>
 
       <GroupModals
         dialog={dialog}
