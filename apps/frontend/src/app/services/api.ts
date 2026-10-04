@@ -1,13 +1,13 @@
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 const memoryStore = new Map<string, string>();
 
 function getStorage(): Storage | null {
   try {
-    if (typeof window !== 'undefined' && window.localStorage) {
+    if (typeof window !== "undefined" && window.localStorage) {
       return window.localStorage;
     }
-    if (typeof localStorage !== 'undefined' && localStorage) {
+    if (typeof localStorage !== "undefined" && localStorage) {
       return localStorage;
     }
   } catch {}
@@ -46,14 +46,14 @@ function safeRemove(key: string): void {
 }
 
 export function getStoredToken(): string | null {
-  return safeGet('odnowa-auth-token');
+  return safeGet("odnowa-auth-token");
 }
 
 export function setStoredToken(token: string | null): void {
   if (token) {
-    safeSet('odnowa-auth-token', token);
+    safeSet("odnowa-auth-token", token);
   } else {
-    safeRemove('odnowa-auth-token');
+    safeRemove("odnowa-auth-token");
   }
 }
 
@@ -63,13 +63,13 @@ export function isAuthenticated(): boolean {
 }
 
 export function clearStoredAuth(): void {
-  safeRemove('odnowa-auth-token');
-  safeRemove('odnowa-user');
+  safeRemove("odnowa-auth-token");
+  safeRemove("odnowa-user");
 }
 
 export function getStoredUser(): CurrentUser | null {
   try {
-    const raw = safeGet('odnowa-user');
+    const raw = safeGet("odnowa-user");
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -78,19 +78,19 @@ export function getStoredUser(): CurrentUser | null {
 
 export function setStoredUser(user: CurrentUser | null): void {
   if (user) {
-    safeSet('odnowa-user', JSON.stringify(user));
+    safeSet("odnowa-user", JSON.stringify(user));
   } else {
-    safeRemove('odnowa-user');
+    safeRemove("odnowa-user");
   }
 }
 
 function authHeaders(): Record<string, string> {
   const token = getStoredToken();
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers["Authorization"] = `Bearer ${token}`;
   }
   return headers;
 }
@@ -100,6 +100,16 @@ export interface CurrentUser {
   name: string;
   email: string;
   role: string;
+}
+
+export async function fetchMe(): Promise<CurrentUser> {
+  const res = await fetch(`${API_URL}/api/auth/me`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    throw new Error("Nie można pobrać profilu");
+  }
+  return res.json();
 }
 
 export interface TokenResponse {
@@ -138,43 +148,44 @@ export interface SubscriptionCheckoutResponse {
 }
 
 export const api = {
-  async register(data: { name: string; email: string; password: string }): Promise<TokenResponse> {
+  async register(data: {
+    name: string;
+    email: string;
+    password: string;
+  }): Promise<TokenResponse> {
     const res = await fetch(`${API_URL}/api/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || err.message || 'Błąd rejestracji');
+      throw new Error(err.detail || err.message || "Błąd rejestracji");
     }
     return res.json();
   },
 
-  async login(data: { email: string; password: string }): Promise<TokenResponse> {
+  async login(data: {
+    email: string;
+    password: string;
+  }): Promise<TokenResponse> {
     const res = await fetch(`${API_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
     if (!res.ok) {
       if (res.status === 401) {
-        throw new Error('Nieprawidłowy adres e-mail lub hasło.');
+        throw new Error("Nieprawidłowy adres e-mail lub hasło.");
       }
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || err.message || 'Błąd logowania');
+      throw new Error(err.detail || err.message || "Błąd logowania");
     }
     return res.json();
   },
 
   async getMe(): Promise<CurrentUser> {
-    const res = await fetch(`${API_URL}/api/auth/me`, {
-      headers: authHeaders(),
-    });
-    if (!res.ok) {
-      throw new Error('Nie można pobrać profilu.');
-    }
-    return res.json();
+    return fetchMe();
   },
 
   async getUserGroups(userId: string): Promise<ApiGroup[]> {
@@ -182,53 +193,62 @@ export const api = {
       headers: authHeaders(),
     });
     if (!res.ok) {
-      throw new Error('Nie udało się pobrać grup użytkownika.');
+      throw new Error("Nie udało się pobrać grup użytkownika.");
     }
     return res.json();
   },
 
   async createGroup(name: string): Promise<ApiGroup> {
     const res = await fetch(`${API_URL}/api/group`, {
-      method: 'POST',
+      method: "POST",
       headers: authHeaders(),
       body: JSON.stringify({ name }),
     });
     if (!res.ok) {
-      throw new Error('Nie udało się utworzyć grupy.');
+      throw new Error("Nie udało się utworzyć grupy.");
     }
     return res.json();
   },
 
   async addUserToGroup(userId: string, groupId: string): Promise<ApiUserGroup> {
     const res = await fetch(`${API_URL}/api/user-group`, {
-      method: 'POST',
+      method: "POST",
       headers: authHeaders(),
       body: JSON.stringify({ user_id: userId, group_id: groupId }),
     });
     if (!res.ok) {
-      throw new Error('Nie udało się dołączyć do grupy.');
+      throw new Error("Nie udało się dołączyć do grupy.");
     }
     return res.json();
   },
 
   async addCompletion(userGroupId: string): Promise<ApiUserGroup> {
-    const res = await fetch(`${API_URL}/api/user-group/${userGroupId}/completions`, {
-      method: 'POST',
-      headers: authHeaders(),
-    });
+    const res = await fetch(
+      `${API_URL}/api/user-group/${userGroupId}/completions`,
+      {
+        method: "POST",
+        headers: authHeaders(),
+      },
+    );
     if (!res.ok) {
-      throw new Error('Nie udało się dodać realizacji.');
+      throw new Error("Nie udało się dodać realizacji.");
     }
     return res.json();
   },
 
-  async markCompletion(userGroupId: string, index: number): Promise<ApiUserGroup> {
-    const res = await fetch(`${API_URL}/api/user-group/${userGroupId}/completions/${index}`, {
-      method: 'PATCH',
-      headers: authHeaders(),
-    });
+  async markCompletion(
+    userGroupId: string,
+    index: number,
+  ): Promise<ApiUserGroup> {
+    const res = await fetch(
+      `${API_URL}/api/user-group/${userGroupId}/completions/${index}`,
+      {
+        method: "PATCH",
+        headers: authHeaders(),
+      },
+    );
     if (!res.ok) {
-      throw new Error('Nie udało się oznaczyć realizacji.');
+      throw new Error("Nie udało się oznaczyć realizacji.");
     }
     return res.json();
   },
@@ -239,25 +259,31 @@ export const api = {
     amount_pln: number;
   }): Promise<SubscriptionCheckoutResponse> {
     const res = await fetch(`${API_URL}/api/payments/subscriptions`, {
-      method: 'POST',
+      method: "POST",
       headers: authHeaders(),
       body: JSON.stringify(data),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || 'Błąd inicjowania płatności Stripe.');
+      throw new Error(err.detail || "Błąd inicjowania płatności Stripe.");
     }
     return res.json();
   },
 
   async startUserOnboarding(userId: string): Promise<OnboardingResponse> {
-    const res = await fetch(`${API_URL}/api/connect/users/${userId}/onboarding`, {
-      method: 'POST',
-      headers: authHeaders(),
-    });
+    console.log("AAAAAAA");
+    const res = await fetch(
+      `${API_URL}/api/connect/users/${userId}/onboarding`,
+      {
+        method: "POST",
+        headers: authHeaders(),
+      },
+    );
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || 'Nie udało się rozpocząć onboardingu Stripe Connect.');
+      throw new Error(
+        err.detail || "Nie udało się rozpocząć onboardingu Stripe Connect.",
+      );
     }
     return res.json();
   },
@@ -267,7 +293,7 @@ export const api = {
       headers: authHeaders(),
     });
     if (!res.ok) {
-      throw new Error('Nie udało się pobrać statusu konta Stripe Connect.');
+      throw new Error("Nie udało się pobrać statusu konta Stripe Connect.");
     }
     return res.json();
   },

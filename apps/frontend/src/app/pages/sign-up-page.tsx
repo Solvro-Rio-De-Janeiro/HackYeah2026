@@ -9,7 +9,8 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { PaymentMethodSection } from "../components/payment-method-section";
-import { setAuthToken } from "../auth";
+import { setAuthToken, setStoredUser } from "../auth";
+import { api, fetchMe } from "../services/api";
 
 export function SignUpPage() {
   const navigate = useNavigate();
@@ -69,32 +70,12 @@ export function SignUpPage() {
       const data = await response.json().catch(() => null);
       if (data?.access_token) {
         setAuthToken(data.access_token);
-        try {
-          const meRes = await fetch(`${API_URL}/api/auth/me`, {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${data.access_token}`,
-            },
-          });
-          if (meRes.ok) {
-            const meData = await meRes.json();
-            setStoredUser(meData);
-          } else {
-            setStoredUser({
-              id: "",
-              name: formData.username,
-              email: formData.email,
-              role: "user",
-            });
-          }
-        } catch {
-          setStoredUser({
-            id: "",
-            name: formData.username,
-            email: formData.email,
-            role: "user",
-          });
-        }
+        const userInfo = await fetchMe();
+        setStoredUser(userInfo);
+
+        const onboarding = await api.startUserOnboarding(userInfo.id);
+        window.location.assign(onboarding.onboarding_url);
+        return;
       } else {
         setAuthToken("authenticated-session");
         setStoredUser({
