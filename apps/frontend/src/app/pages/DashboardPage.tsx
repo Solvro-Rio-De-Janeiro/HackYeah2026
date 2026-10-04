@@ -136,7 +136,7 @@ export function DashboardPage() {
             </div>
 
             <p className="m-0 border-t border-[#ebebeb] px-5 py-4 text-center text-xs text-[#727279] dark:border-white/10 dark:text-slate-400 sm:px-8">
-              Po dołączeniu zobaczysz tutaj cele i postępy swojej grupy.
+              Po dołączeniu zobaczysz tutaj cele i postępy swojej grupy
             </p>
           </section>
         )}

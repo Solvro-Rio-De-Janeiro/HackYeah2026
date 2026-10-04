@@ -1,4 +1,9 @@
-import { ArrowUpRight, UserRoundPlus, UsersRound } from "lucide-react";
+import {
+  ArrowUpRight,
+  PlusCircle,
+  UserRoundPlus,
+  UsersRound,
+} from "lucide-react";
 import { useDashboard } from "../../context/DashboardContext";
 
 interface GroupToolbarProps {
@@ -10,8 +15,8 @@ export function GroupToolbar({ onOpenJoin, onOpenCreate }: GroupToolbarProps) {
   const { groups, groupsLoading, activeGroup, selectGroup } = useDashboard();
 
   return (
-    <div className="group-toolbar flex items-center justify-between gap-4 my-2 mb-6">
-      <div className="flex flex-col gap-1.5">
+    <div className="group-toolbar flex max-md:flex-col items-center justify-between gap-4 my-2 mb-6">
+      <div className="flex flex-col gap-1.5 max-md:w-full">
         <span className="eyebrow muted text-[9px] font-mono tracking-wider uppercase text-[#727279] dark:text-slate-400">
           MOJE GRUPY
         </span>
@@ -53,9 +58,8 @@ export function GroupToolbar({ onOpenJoin, onOpenCreate }: GroupToolbarProps) {
           className="outline inline-flex items-center gap-2"
           onClick={onOpenCreate}
         >
-          <UserRoundPlus className="size-4" aria-hidden="true" />
+          <PlusCircle className="size-4" aria-hidden="true" />
           STWÓRZ GRUPĘ
-          <ArrowUpRight className="size-3.5" aria-hidden="true" />
         </button>
       </div>
     </div>

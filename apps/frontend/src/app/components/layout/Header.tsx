@@ -61,7 +61,7 @@ export function Header({ onProfile }: HeaderProps) {
               }`}
             >
               <User className="size-3.5" />
-              <span>Profil ({firstName})</span>
+              <span>{firstName}</span>
             </Link>
             <button
               type="button"

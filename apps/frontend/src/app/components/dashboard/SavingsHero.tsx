@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ArrowUpRight, Plus, UsersRound } from "lucide-react";
+import { ArrowUpRight, Plus, PlusCircle, UsersRound } from "lucide-react";
 import {
   useDashboard,
   money,
@@ -87,8 +87,7 @@ export function SavingsHero({
               }}
               aria-label="Stwórz grupę"
             >
-              Stwórz grupę{" "}
-              <ArrowUpRight className="ml-1 size-5" aria-hidden="true" />
+              Stwórz grupę
             </button>
           )}
         </h1>
@@ -117,27 +116,13 @@ export function SavingsHero({
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (onOpenCreate) onOpenCreate();
-                  else if (onAddGoal) onAddGoal();
-                }}
-                className="primary bg-white text-[#010120] hover:bg-slate-200 px-4 py-2 font-mono text-xs tracking-wider uppercase rounded font-medium transition-all cursor-pointer"
-              >
-                <UsersRound className="mr-1.5 size-3.5" aria-hidden="true" />
-                STWÓRZ GRUPĘ
-                <ArrowUpRight className="ml-1.5 size-3.5" aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
                   if (onAddGoal) onAddGoal();
                   else onShowGoal();
                 }}
                 className="outline border border-white/30 text-white hover:bg-white/10 px-4 py-2 font-mono text-xs tracking-wider uppercase rounded font-medium transition-all cursor-pointer"
               >
-                <Plus className="mr-1.5 size-3.5" aria-hidden="true" />
+                <PlusCircle className="mr-1.5 size-4" aria-hidden="true" />
                 DODAJ CEL
-                <ArrowUpRight className="ml-1.5 size-3.5" aria-hidden="true" />
               </button>
             </div>
           )}

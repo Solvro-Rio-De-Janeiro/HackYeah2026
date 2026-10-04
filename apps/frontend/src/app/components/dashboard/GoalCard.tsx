@@ -79,7 +79,7 @@ export function GoalCard({
         <div className="goal-bottom flex items-center justify-between flex-wrap gap-3 pt-3 border-t border-[#ebebeb] dark:border-white/10">
           <span className="text-[10px] text-[#727279] dark:text-slate-400 flex items-center gap-2">
             <span className="small-dot w-1.5 h-1.5 rounded-full bg-[#85ebcf]" />
-            {money(rate)} dziennie na osobę.
+            {money(rate)} dziennie na osobę
           </span>
 
           <div className="flex items-center gap-2">

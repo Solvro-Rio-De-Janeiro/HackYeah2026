@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ArrowUpRight, Check, Copy } from "lucide-react";
+import { ArrowUpRight, Check, Copy, Save } from "lucide-react";
 import { useDashboard } from "../../context/DashboardContext";
 import Modal from "../common/Modal";
 
@@ -132,10 +132,10 @@ export function GroupModals({ dialog, onClose, onFeedback }: GroupModalsProps) {
   }
 
   const titles: Record<"create" | "join" | "invite" | "goal", string> = {
-    create: "Zacznijcie coś dobrego.",
-    join: "Znajdź swoją ekipę.",
-    invite: "Razem jest łatwiej.",
-    goal: "Wyznacz wspólny cel.",
+    create: "Zacznijcie coś dobrego",
+    join: "Znajdź swoją ekipę",
+    invite: "Razem jest łatwiej",
+    goal: "Wyznacz wspólny cel",
   };
 
   return (
@@ -223,7 +223,7 @@ export function GroupModals({ dialog, onClose, onFeedback }: GroupModalsProps) {
               className="w-full p-3 border border-[#ebebeb] dark:border-white/10 dark:bg-white/5 rounded text-sm outline-none focus:ring-1 focus:ring-[#7472d5]"
             />
             <span className="text-[10px] text-[#727279] dark:text-slate-400">
-              Stawka wpłacana codziennie przez każdego członka grupy.
+              Stawka wpłacana codziennie przez każdego członka grupy
             </span>
           </label>
 
@@ -238,10 +238,10 @@ export function GroupModals({ dialog, onClose, onFeedback }: GroupModalsProps) {
 
           <button
             type="submit"
-            className="primary w-full bg-[#010120] text-white hover:bg-[#292943] rounded py-3.5 px-4 font-mono text-xs tracking-wider uppercase flex items-center justify-between cursor-pointer transition-all mt-2"
+            className="primary w-full bg-[#010120] text-white hover:bg-[#292943] rounded py-3.5 px-4 font-mono text-xs tracking-wider uppercase flex items-center gap-2 cursor-pointer transition-all mt-2"
           >
+            <Save className="size-4" aria-hidden="true" />
             <span>ZAPISZ CEL</span>
-            <ArrowUpRight className="size-4" aria-hidden="true" />
           </button>
         </form>
       ) : (

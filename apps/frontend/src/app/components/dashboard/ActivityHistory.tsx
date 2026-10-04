@@ -60,7 +60,7 @@ export function ActivityHistory() {
         <div className="activity-empty text-center py-6">
           <span className="text-3xl text-[#9990c4] block mb-2">✧</span>
           <h3 className="text-sm font-semibold text-[#010120] mb-1">
-            Wasza historia dopiero się zaczyna.
+            Wasza historia dopiero się zaczyna
           </h3>
           <p className="text-xs text-[#727279] leading-relaxed">
             Przetestuj dzisiejszy zapis {money(rate)}
