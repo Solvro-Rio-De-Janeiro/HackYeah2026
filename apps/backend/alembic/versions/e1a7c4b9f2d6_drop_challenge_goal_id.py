@@ -21,10 +21,13 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    for foreign_key in sa.inspect(op.get_bind()).get_foreign_keys("challenge"):
+    inspector = sa.inspect(op.get_bind())
+    for foreign_key in inspector.get_foreign_keys("challenge"):
         if foreign_key["constrained_columns"] == ["goal_id"]:
             op.drop_constraint(foreign_key["name"], "challenge", type_="foreignkey")
-    op.drop_column("challenge", "goal_id")
+    existing_columns = {column["name"] for column in inspector.get_columns("challenge")}
+    if "goal_id" in existing_columns:
+        op.drop_column("challenge", "goal_id")
 
 
 def downgrade() -> None:

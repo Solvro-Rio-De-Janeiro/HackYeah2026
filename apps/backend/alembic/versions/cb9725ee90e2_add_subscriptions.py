@@ -31,8 +31,13 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('endpoint')
     )
-    op.drop_constraint(op.f('challenge_goal_id_fkey'), 'challenge', type_='foreignkey')
-    op.drop_column('challenge', 'goal_id')
+    inspector = sa.inspect(op.get_bind())
+    for foreign_key in inspector.get_foreign_keys('challenge'):
+        if foreign_key['constrained_columns'] == ['goal_id']:
+            op.drop_constraint(foreign_key['name'], 'challenge', type_='foreignkey')
+    existing_columns = {column['name'] for column in inspector.get_columns('challenge')}
+    if 'goal_id' in existing_columns:
+        op.drop_column('challenge', 'goal_id')
     # ### end Alembic commands ###
 
 
