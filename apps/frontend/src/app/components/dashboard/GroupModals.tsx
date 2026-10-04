@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ArrowUpRight, Check, Copy } from 'lucide-react';
 import { useDashboard } from '../../context/DashboardContext';
 import Modal from '../common/Modal';
 
@@ -152,7 +153,8 @@ export function GroupModals({ dialog, onClose, onFeedback }: GroupModalsProps) {
             className="primary w-full bg-[#010120] text-white hover:bg-[#292943] rounded py-3 px-4 font-mono text-xs tracking-wider uppercase flex items-center justify-center gap-2 cursor-pointer transition-all"
             onClick={handleCopyInviteCode}
           >
-            KOPIUJ KOD ↗
+            <Copy className="size-4" aria-hidden="true" />
+            KOPIUJ IDENTYFIKATOR
           </button>
 
           <p className="small-text text-[10px] leading-relaxed text-[#727279] dark:text-slate-400 m-0">
@@ -161,7 +163,10 @@ export function GroupModals({ dialog, onClose, onFeedback }: GroupModalsProps) {
 
           {inviteFeedback && (
             <p className="text-xs text-[#285342] bg-[#edf9f3] p-2 rounded text-center" role="status">
-              ✓ {inviteFeedback}
+              <span className="inline-flex items-center gap-1.5">
+                <Check className="size-3.5" aria-hidden="true" />
+                {inviteFeedback}
+              </span>
             </p>
           )}
         </div>
@@ -222,7 +227,7 @@ export function GroupModals({ dialog, onClose, onFeedback }: GroupModalsProps) {
             className="primary w-full bg-[#010120] text-white hover:bg-[#292943] rounded py-3.5 px-4 font-mono text-xs tracking-wider uppercase flex items-center justify-between cursor-pointer transition-all mt-2"
           >
             <span>ZAPISZ CEL</span>
-            <span>↗</span>
+            <ArrowUpRight className="size-4" aria-hidden="true" />
           </button>
         </form>
       ) : (
@@ -283,7 +288,7 @@ export function GroupModals({ dialog, onClose, onFeedback }: GroupModalsProps) {
                   ? 'STWÓRZ GRUPĘ'
                   : 'DOŁĄCZ DO GRUPY'}
             </span>
-            <span>↗</span>
+            <ArrowUpRight className="size-4" aria-hidden="true" />
           </button>
         </form>
       )}

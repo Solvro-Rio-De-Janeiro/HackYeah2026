@@ -144,6 +144,11 @@ describe('App', () => {
   });
 
   it('should show the empty state when the backend returns no groups', async () => {
+    localStorage.setItem(
+      'odnowa-groups',
+      JSON.stringify([{ ...backendGroup, id: 'stale-local-group', name: 'Stara grupa' }]),
+    );
+    localStorage.setItem('odnowa-active-group', 'stale-local-group');
     setValidSession([]);
     render(
       <MemoryRouter initialEntries={['/dashboard']}>
@@ -155,6 +160,9 @@ describe('App', () => {
       await screen.findByText('Nie należysz jeszcze do żadnej grupy'),
     ).toBeTruthy();
     expect(screen.getByRole('button', { name: /STWÓRZ GRUPĘ/i })).toBeTruthy();
+    expect(screen.queryByText('Stara grupa')).toBeNull();
+    expect(localStorage.getItem('odnowa-groups')).not.toBeNull();
+    expect(localStorage.getItem('odnowa-active-group')).toBe('stale-local-group');
   });
 
   it('should create a group and add the current user through backend endpoints', async () => {
@@ -164,6 +172,7 @@ describe('App', () => {
       id: '22222222-2222-4222-8222-222222222222',
       name: 'Nowy początek',
     };
+    let backendGroups: (typeof backendGroup)[] = [];
     const fetchMock = vi.fn().mockImplementation(
       async (input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
@@ -171,12 +180,17 @@ describe('App', () => {
           return { ok: true, status: 200, json: async () => authenticatedUser };
         }
         if (url.includes('/api/user-group/user/')) {
-          return { ok: true, status: 200, json: async () => [] };
+          return {
+            ok: true,
+            status: 200,
+            json: async () => backendGroups,
+          };
         }
         if (url.endsWith('/api/group') && init?.method === 'POST') {
           return { ok: true, status: 200, json: async () => createdGroup };
         }
         if (url.endsWith('/api/user-group') && init?.method === 'POST') {
+          backendGroups = [createdGroup];
           return {
             ok: true,
             status: 200,
@@ -221,6 +235,18 @@ describe('App', () => {
       user_id: authenticatedUser.id,
       group_id: createdGroup.id,
     });
+    const groupListRequests = fetchMock.mock.calls
+      .map(([url, init], index) => ({
+        url: String(url),
+        method: init?.method,
+        index,
+      }))
+      .filter(({ url }) => url.includes('/api/user-group/user/'));
+    expect(groupListRequests[groupListRequests.length - 1]?.index).toBeGreaterThan(
+      fetchMock.mock.calls.indexOf(membershipRequest!),
+    );
+    expect(localStorage.getItem('odnowa-groups')).toBeNull();
+    expect(localStorage.getItem('odnowa-active-group')).toBeNull();
   });
 
   it('should clear the session and redirect to login on logout', async () => {

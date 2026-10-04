@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { ArrowRight, ArrowUpRight, Plus, UsersRound } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Check,
+  UserRoundPlus,
+  UsersRound,
+} from "lucide-react";
 import { useDashboard } from "../context/DashboardContext";
 import GroupToolbar from "../components/dashboard/GroupToolbar";
 import SavingsHero from "../components/dashboard/SavingsHero";
@@ -92,7 +98,7 @@ export function DashboardPage() {
               >
                 <span className="flex w-full items-center justify-between">
                   <span className="grid size-10 place-items-center rounded-lg bg-white/10 text-[#c8f6f9]">
-                    <Plus className="size-5" aria-hidden="true" />
+                    <UserRoundPlus className="size-5" aria-hidden="true" />
                   </span>
                   <ArrowUpRight className="size-4 text-white/60 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
                 </span>
@@ -173,7 +179,10 @@ export function DashboardPage() {
           role="status"
           aria-live="polite"
         >
-          ✓ {feedback}
+          <span className="inline-flex items-center gap-2">
+            <Check className="size-4" aria-hidden="true" />
+            {feedback}
+          </span>
         </p>
       )}
 

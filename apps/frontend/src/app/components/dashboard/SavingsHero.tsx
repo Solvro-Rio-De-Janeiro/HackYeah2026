@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ArrowUpRight, Plus, UsersRound } from 'lucide-react';
 import { useDashboard, money, dailyAmount, isRealGoal } from '../../context/DashboardContext';
 
 function getTimeUntilMidnight(): string {
@@ -73,7 +74,7 @@ export function SavingsHero({ onShowGoal, onAddGoal, onOpenCreate }: SavingsHero
               }}
               aria-label="Stwórz grupę"
             >
-              Stwórz grupę ↗
+              Stwórz grupę <ArrowUpRight className="ml-1 size-5" aria-hidden="true" />
             </button>
           )}
         </h1>
@@ -106,7 +107,9 @@ export function SavingsHero({ onShowGoal, onAddGoal, onOpenCreate }: SavingsHero
                 }}
                 className="primary bg-white text-[#010120] hover:bg-slate-200 px-4 py-2 font-mono text-xs tracking-wider uppercase rounded font-medium transition-all cursor-pointer"
               >
-                ＋ STWÓRZ GRUPĘ ↗
+                <UsersRound className="mr-1.5 size-3.5" aria-hidden="true" />
+                STWÓRZ GRUPĘ
+                <ArrowUpRight className="ml-1.5 size-3.5" aria-hidden="true" />
               </button>
               <button
                 type="button"
@@ -117,7 +120,9 @@ export function SavingsHero({ onShowGoal, onAddGoal, onOpenCreate }: SavingsHero
                 }}
                 className="outline border border-white/30 text-white hover:bg-white/10 px-4 py-2 font-mono text-xs tracking-wider uppercase rounded font-medium transition-all cursor-pointer"
               >
-                DODAJ CEL ↗
+                <Plus className="mr-1.5 size-3.5" aria-hidden="true" />
+                DODAJ CEL
+                <ArrowUpRight className="ml-1.5 size-3.5" aria-hidden="true" />
               </button>
             </div>
           )}

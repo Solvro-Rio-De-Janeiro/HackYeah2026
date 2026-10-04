@@ -245,9 +245,9 @@ apps/frontend/src/
 
 ### 3.2 State Management & Offline Resilience
 
-The application uses an **offline-first LocalStorage persistence engine** implemented inside [`DashboardContext.tsx`](file:///home/kacper-petelicki/HackYeah2026/apps/frontend/src/app/context/DashboardContext.tsx).
+The application uses LocalStorage for selected preferences and incident history in [`DashboardContext.tsx`](file:///home/kacper-petelicki/HackYeah2026/apps/frontend/src/app/context/DashboardContext.tsx). Group membership and group names are fetched from the backend and are not persisted locally.
 
-* **Zero Latency & Resilience:** All data changes (`odnowa-groups`, `odnowa-active-group`, `odnowa-incidents`, `odnowa-settings`, `odnowa-theme`) write directly to browser storage with safe JSON parsing and fallback fallthrough.
+* **Persisted preferences:** `odnowa-incidents`, `odnowa-settings`, and `odnowa-theme` use browser storage with safe JSON parsing and fallback behavior. Groups and the active group selection exist only in memory; the backend is the source of truth for group membership and names.
 * **Reactive Derived State:**
   * `personalTotal`: Sum of all personal deposits in the active group.
   * `groupTotal`: Combined pot including simulated group peers.

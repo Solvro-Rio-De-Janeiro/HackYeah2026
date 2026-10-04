@@ -1,5 +1,5 @@
-import React from 'react';
-import { useDashboard } from '../../context/DashboardContext';
+import { ArrowUpRight, UserRoundPlus, UsersRound } from "lucide-react";
+import { useDashboard } from "../../context/DashboardContext";
 
 interface GroupToolbarProps {
   onOpenJoin: () => void;
@@ -24,11 +24,15 @@ export function GroupToolbar({ onOpenJoin, onOpenCreate }: GroupToolbarProps) {
         >
           {groups.length === 0 && (
             <option value="" disabled>
-              {groupsLoading ? 'Ładowanie grup...' : 'Brak grup'}
+              {groupsLoading ? "Ładowanie grup..." : "Brak grup"}
             </option>
           )}
           {groups.map((item) => (
-            <option key={item.id} value={item.id} className="dark:bg-[#161622] dark:text-white">
+            <option
+              key={item.id}
+              value={item.id}
+              className="dark:bg-[#161622] dark:text-white"
+            >
               {item.name}
             </option>
           ))}
@@ -38,17 +42,21 @@ export function GroupToolbar({ onOpenJoin, onOpenCreate }: GroupToolbarProps) {
       <div className="group-actions flex items-center gap-2.5">
         <button
           type="button"
-          className="outline"
+          className="outline inline-flex items-center gap-2"
           onClick={onOpenJoin}
         >
-          DOŁĄCZ DO GRUPY ↗
+          <UsersRound className="size-4" aria-hidden="true" />
+          DOŁĄCZ DO GRUPY
+          <ArrowUpRight className="size-3.5" aria-hidden="true" />
         </button>
         <button
           type="button"
-          className="outline"
+          className="outline inline-flex items-center gap-2"
           onClick={onOpenCreate}
         >
-          ＋ STWÓRZ GRUPĘ
+          <UserRoundPlus className="size-4" aria-hidden="true" />
+          STWÓRZ GRUPĘ
+          <ArrowUpRight className="size-3.5" aria-hidden="true" />
         </button>
       </div>
     </div>

@@ -130,11 +130,9 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   );
   const [groupsError, setGroupsError] = useState<string | null>(null);
   const groupRequestId = useRef(0);
+  const groupsRef = useRef(groups);
 
-  const [activeId, setActiveId] = useState(() => {
-    const saved = readSaved('odnowa-active-group', 'odnowa');
-    return saved === 'demo' ? 'odnowa' : saved;
-  });
+  const [activeId, setActiveId] = useState('');
 
   const [settings, setSettings] = useState<SettingsState>(() =>
     readSaved('odnowa-settings', {
@@ -178,28 +176,29 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   );
 
   const reloadGroups = useCallback(async () => {
+    const requestId = ++groupRequestId.current;
     if (!currentUser?.id) {
+      groupsRef.current = [];
       setGroups([]);
+      setActiveId('');
       setGroupsLoading(false);
       return;
     }
 
     setGroupsLoading(true);
     setGroupsError(null);
-    const requestId = ++groupRequestId.current;
     try {
       const backendGroups = await api.getUserGroups(currentUser.id);
       if (requestId !== groupRequestId.current) return;
-      const cachedGroups = readSaved<Group[]>('odnowa-groups', []);
-      const next = backendGroups.map((group) => mapApiGroup(group, cachedGroups));
+      const next = backendGroups.map((group) =>
+        mapApiGroup(group, groupsRef.current),
+      );
+      groupsRef.current = next;
       setGroups(next);
-      writeSaved('odnowa-groups', next);
       setActiveId((current) => {
-        const nextId = next.some((group) => group.id === current)
+        return next.some((group) => group.id === current)
           ? current
           : next[0]?.id || '';
-        writeSaved('odnowa-active-group', nextId);
-        return nextId;
       });
     } catch (error) {
       if (requestId !== groupRequestId.current) return;
@@ -208,6 +207,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
           ? error.message
           : 'Nie udało się pobrać grup z serwera.',
       );
+      throw error;
     } finally {
       if (requestId === groupRequestId.current) {
         setGroupsLoading(false);
@@ -216,7 +216,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   }, [currentUser?.id]);
 
   useEffect(() => {
-    void reloadGroups();
+    void reloadGroups().catch(() => undefined);
   }, [reloadGroups]);
 
   const createGroup = async (name: string): Promise<Group> => {
@@ -234,23 +234,19 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       throw new Error(`${message} ID utworzonej grupy: ${created.id}`);
     }
 
-    const group: Group = {
-      id: created.id,
-      name: created.name,
-      goal: '',
-      target: 0,
-      dailyAmount: 30,
-      demo: false,
-      userGroupId: membership.id,
-      deposits: [],
-    };
-    groupRequestId.current += 1;
-    const next = [...groups.filter((item) => item.id !== group.id), group];
+    await reloadGroups();
+    const group = groupsRef.current.find((item) => item.id === created.id);
+    if (!group) {
+      throw new Error('Grupa została utworzona, ale nie pojawiła się na liście z serwera.');
+    }
+    const updatedGroup = { ...group, userGroupId: membership.id };
+    const next = groupsRef.current.map((item) =>
+      item.id === updatedGroup.id ? updatedGroup : item,
+    );
+    groupsRef.current = next;
     setGroups(next);
-    setGroupsError(null);
-    writeSaved('odnowa-groups', next);
-    selectGroup(group.id);
-    return group;
+    selectGroup(updatedGroup.id);
+    return updatedGroup;
   };
 
   const joinGroup = async (groupId: string): Promise<Group> => {
@@ -259,20 +255,19 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     }
     const remoteGroup = await api.getGroup(groupId);
     const membership = await api.addUserToGroup(currentUser.id, remoteGroup.id);
-    const group = mapApiGroup(
-      remoteGroup,
-      readSaved<Group[]>('odnowa-groups', []),
+    await reloadGroups();
+    const group = groupsRef.current.find((item) => item.id === remoteGroup.id);
+    if (!group) {
+      throw new Error('Dołączono do grupy, ale nie pojawiła się ona na liście z serwera.');
+    }
+    const updatedGroup = { ...group, userGroupId: membership.id };
+    const next = groupsRef.current.map((item) =>
+      item.id === updatedGroup.id ? updatedGroup : item,
     );
-    group.userGroupId = membership.id;
-    groupRequestId.current += 1;
-    const next = groups.some((item) => item.id === group.id)
-      ? groups.map((item) => (item.id === group.id ? group : item))
-      : [...groups, group];
+    groupsRef.current = next;
     setGroups(next);
-    setGroupsError(null);
-    writeSaved('odnowa-groups', next);
-    selectGroup(group.id);
-    return group;
+    selectGroup(updatedGroup.id);
+    return updatedGroup;
   };
 
   const members = useMemo<Member[]>(() => {
@@ -296,13 +291,12 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   }, [groups]);
 
   const updateGroups = (next: Group[]) => {
+    groupsRef.current = next;
     setGroups(next);
-    writeSaved('odnowa-groups', next);
   };
 
   const selectGroup = (id: string) => {
     setActiveId(id);
-    writeSaved('odnowa-active-group', id);
   };
 
   const setGoal = (goal: string, target: number, dailyAmount?: number) => {
