@@ -2,22 +2,22 @@ from typing import Annotated
 
 import jwt
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from auth.security import decode_access_token
 from core.db_config import DBSessionDep
 from user import repository
 from user.models import User, UserRole
 
-_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
+_bearer_scheme = HTTPBearer()
 
 
 async def get_current_user(
-    token: Annotated[str, Depends(_oauth2_scheme)],
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(_bearer_scheme)],
     db: DBSessionDep,
 ) -> User:
     try:
-        user_id = decode_access_token(token)
+        user_id = decode_access_token(credentials.credentials)
     except jwt.PyJWTError as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

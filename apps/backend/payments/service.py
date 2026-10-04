@@ -43,6 +43,15 @@ async def create_subscription_checkout(
         goal = await session.get(Goal, request.goal_id)
         if goal is None:
             raise HTTPException(status_code=404, detail="Goal not found")
+        if (
+            not goal.target_price.is_integer()
+            or not 2 <= goal.target_price <= 999_999
+        ):
+            raise HTTPException(
+                status_code=409,
+                detail="Goal target price must be a whole PLN amount between 2 and 999999",
+            )
+        amount_pln = int(goal.target_price)
 
         challenge = await session.get(Challenge, goal.challenge_id)
         if challenge is None or challenge.state != ChallengeState.ACTIVE:
@@ -78,7 +87,7 @@ async def create_subscription_checkout(
         subscription = Subscription(
             user_group_id=membership.id,
             goal_id=goal.id,
-            amount_pln=request.amount_pln,
+            amount_pln=amount_pln,
             interval=GOAL_PERIOD_INTERVALS[goal.period],
             status=SubscriptionStatus.INCOMPLETE,
         )
@@ -102,7 +111,7 @@ async def create_subscription_checkout(
                 {
                     "price_data": {
                         "currency": "pln",
-                        "unit_amount": request.amount_pln * 100,
+                        "unit_amount": amount_pln * 100,
                         "recurring": {"interval": interval.value},
                         "product_data": {"name": product_name},
                     },

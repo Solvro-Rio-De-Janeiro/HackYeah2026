@@ -29,6 +29,7 @@ class GoalRepository:
         gift_goal = GiftGoal(name=request.name, price=request.price)
         goal = Goal(
             saldo=request.saldo,
+            target_price=request.target_price,
             period=GoalPeriod(request.period),
             challenge=challenge,
             gift_goal=gift_goal,
