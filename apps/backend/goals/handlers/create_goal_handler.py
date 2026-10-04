@@ -8,7 +8,7 @@ from goals.goal_repository import GoalRepository
 from goals.models import Goal
 from goals.schemas import CreateGoalRequest
 from payments.models import Subscription, SubscriptionInterval, SubscriptionStatus
-from connect.service import create_goal_stripe_accounts
+from fundation.models import Foundation
 from user_group.repository import UserGroupRepository
 
 
@@ -31,6 +31,13 @@ class CreateGoalHandler:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="No users found for this group",
+            )
+
+        foundation = await self.session.get(Foundation, request.foundation_id)
+        if foundation is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Foundation not found",
             )
 
         goal = await self.goal_repository.create(request)
@@ -65,12 +72,6 @@ class CreateGoalHandler:
         checkout_urls: list[str] = []
         try:
             await self.session.commit()
-            collection_account_id, completion_account_id = await create_goal_stripe_accounts(
-                goal.id
-            )
-            goal.collection_stripe_account_id = collection_account_id
-            goal.completion_stripe_account_id = completion_account_id
-            await self.session.commit()
 
             for subscription in subscriptions:
                 metadata = {
@@ -100,19 +101,20 @@ class CreateGoalHandler:
                     metadata=metadata,
                     subscription_data={
                         "metadata": metadata,
-                        "transfer_data": {"destination": collection_account_id},
                     },
                     api_key=settings.stripe_secret_key,
                     idempotency_key=f"subscription-checkout-{subscription.id}",
                 )
                 subscription.stripe_checkout_session_id = checkout.id
+                if checkout.url:
+                    checkout_urls.append(checkout.url)
 
             await self.session.commit()
         except (stripe.StripeError, HTTPException) as error:
             await self.session.rollback()
             raise HTTPException(
                 status_code=502,
-                detail="Could not initialize Stripe accounts or Checkout sessions for goal",
+                detail="Could not initialize Stripe Checkout sessions for goal",
             ) from error
 
         return goal, checkout_urls

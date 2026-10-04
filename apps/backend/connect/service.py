@@ -212,7 +212,7 @@ async def pay_out_goal_purchase(
 
 
 async def pay_out_goal_completion(session: AsyncSession, goal_id: UUID) -> Payout:
-    """Send a completed goal's collected funds to its completion Stripe account."""
+    """Send a completed goal's collected funds to its foundation's Stripe account."""
     _require_stripe()
     async with transaction(session):
         goal = await session.get(Goal, goal_id, with_for_update=True)
@@ -223,10 +223,11 @@ async def pay_out_goal_completion(session: AsyncSession, goal_id: UUID) -> Payou
         )
         if challenge is None:
             raise HTTPException(status_code=404, detail="Challenge not found")
-        if goal.completion_stripe_account_id is None:
+        foundation = await session.get(Foundation, challenge.foundation_id)
+        if foundation is None or foundation.stripe_account_id is None:
             raise HTTPException(
                 status_code=409,
-                detail="Goal has no completion Stripe account",
+                detail="Foundation has no Stripe account; finish onboarding first",
             )
         memberships = list(
             await session.scalars(
@@ -262,7 +263,7 @@ async def pay_out_goal_completion(session: AsyncSession, goal_id: UUID) -> Payou
             user_group_id=memberships[0],
         )
         if await _transfer(
-            session, payout, goal.completion_stripe_account_id, challenge.id
+            session, payout, foundation.stripe_account_id, challenge.id
         ):
             for subscription in subscriptions:
                 await _release_subscription_deposit(session, subscription)

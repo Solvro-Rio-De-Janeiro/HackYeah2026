@@ -126,11 +126,6 @@ async def create_subscription_checkout(
             metadata=metadata,
             subscription_data={
                 "metadata": metadata,
-                **(
-                    {"transfer_data": {"destination": goal.collection_stripe_account_id}}
-                    if goal.collection_stripe_account_id
-                    else {}
-                ),
             },
             api_key=settings.stripe_secret_key,
             idempotency_key=f"subscription-checkout-{subscription_id}",
