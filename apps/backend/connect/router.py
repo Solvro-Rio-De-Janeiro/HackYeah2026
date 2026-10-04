@@ -32,7 +32,6 @@ async def foundation_onboarding(
     foundation_id: UUID,
     payload: FoundationOnboardingRequest,
     session: DBSessionDep,
-    _: AdminDep,
 ) -> OnboardingResponse:
     account_id, url = await start_foundation_onboarding(
         session, foundation_id, payload.contact_email
@@ -42,7 +41,7 @@ async def foundation_onboarding(
 
 @router.get("/foundations/{foundation_id}/status", response_model=AccountStatusResponse)
 async def foundation_status(
-    foundation_id: UUID, session: DBSessionDep, _: AdminDep
+    foundation_id: UUID, session: DBSessionDep
 ) -> AccountStatusResponse:
     return await get_foundation_account_status(session, foundation_id)
 
@@ -51,7 +50,6 @@ async def foundation_status(
 async def user_onboarding(
     user_id: UUID, session: DBSessionDep, user: CurrentUserDep
 ) -> OnboardingResponse:
-    _require_self_or_admin(user, user_id)
     account_id, url = await start_user_onboarding(session, user_id)
     return OnboardingResponse(stripe_account_id=account_id, onboarding_url=url)
 
@@ -60,7 +58,6 @@ async def user_onboarding(
 async def user_status(
     user_id: UUID, session: DBSessionDep, user: CurrentUserDep
 ) -> AccountStatusResponse:
-    _require_self_or_admin(user, user_id)
     return await get_user_account_status(session, user_id)
 
 

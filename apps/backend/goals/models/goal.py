@@ -14,6 +14,7 @@ class Goal(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid4
     )
     saldo: Mapped[float] = mapped_column(Float, nullable=False)
+    target_price: Mapped[float] = mapped_column(Float, nullable=False)
     period: Mapped[GoalPeriod] = mapped_column(
         Enum(GoalPeriod, name="goal_period"), nullable=False
     )
