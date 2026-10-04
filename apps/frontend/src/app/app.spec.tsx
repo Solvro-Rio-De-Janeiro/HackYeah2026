@@ -24,6 +24,31 @@ describe('App', () => {
     expect(screen.getByText('Przyłapania')).toBeTruthy();
   });
 
+  it('should show logout for a signed-in user and clear their session on logout', () => {
+    localStorage.setItem('odnowa-auth-token', 'test-token');
+    localStorage.setItem(
+      'odnowa-user',
+      JSON.stringify({
+        id: 'test-user',
+        name: 'Test User',
+        email: 'test@example.com',
+        role: 'user',
+      }),
+    );
+
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Wyloguj/i }));
+
+    expect(localStorage.getItem('odnowa-auth-token')).toBeNull();
+    expect(localStorage.getItem('odnowa-user')).toBeNull();
+    expect(screen.getByText('Witaj ponownie')).toBeTruthy();
+  });
+
   it('should render Sign Up page on /signup', () => {
     render(
       <MemoryRouter initialEntries={['/signup']}>

@@ -20,7 +20,6 @@ export function LoginPage() {
     defaultValues: {
       email: "",
       password: "",
-      rememberMe: false,
     },
   });
 
@@ -52,7 +51,7 @@ export function LoginPage() {
         try {
           const meRes = await fetch(`${API_URL}/api/auth/me`, {
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
               Authorization: `Bearer ${data.access_token}`,
             },
           });
@@ -60,14 +59,29 @@ export function LoginPage() {
             const meData = await meRes.json();
             setStoredUser(meData);
           } else {
-            setStoredUser({ id: '', name: email.split('@')[0], email, role: 'user' });
+            setStoredUser({
+              id: "",
+              name: email.split("@")[0],
+              email,
+              role: "user",
+            });
           }
         } catch {
-          setStoredUser({ id: '', name: email.split('@')[0], email, role: 'user' });
+          setStoredUser({
+            id: "",
+            name: email.split("@")[0],
+            email,
+            role: "user",
+          });
         }
       } else {
-        setAuthToken('authenticated-session');
-        setStoredUser({ id: '', name: email.split('@')[0], email, role: 'user' });
+        setAuthToken("authenticated-session");
+        setStoredUser({
+          id: "",
+          name: email.split("@")[0],
+          email,
+          role: "user",
+        });
       }
       navigate("/dashboard");
     } catch (err) {
@@ -175,24 +189,6 @@ export function LoginPage() {
                 </p>
               )}
             </label>
-          </div>
-
-          <div className="flex justify-between items-center my-3 text-xs">
-            <label className="flex items-center gap-2 cursor-pointer text-slate-600 dark:text-slate-400">
-              <input
-                {...register("rememberMe")}
-                type="checkbox"
-                className="w-4 h-4 rounded border border-slate-300 accent-[#010120] cursor-pointer"
-                disabled={isSubmitting}
-              />
-              <span>Zapamiętaj mnie</span>
-            </label>
-            <Link
-              to="/forgot-password"
-              className="text-slate-500 dark:text-slate-400 hover:text-[#010120] dark:hover:text-white hover:underline"
-            >
-              Zapomniałeś hasła?
-            </Link>
           </div>
 
           <button
