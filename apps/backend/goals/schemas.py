@@ -11,8 +11,8 @@ class CreateGoalRequest(BaseModel):
     description: str
     saldo: float
     price: float
-    addiction_type: AddictionType  # enum
-    period: GoalPeriod  # enum
+    addiction_type: AddictionType
+    period: GoalPeriod
 
 
 class FinishGoalRequest(BaseModel):
