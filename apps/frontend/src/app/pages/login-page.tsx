@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { LoginFormData, loginFormSchema } from "../schemas/login-form-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LogIn } from "lucide-react";
@@ -24,7 +24,7 @@ export function LoginPage() {
     },
   });
 
-  async function onSubmit(formData: LoginFormData) {
+  const onSubmit: SubmitHandler<LoginFormData> = async (formData) => {
     const API_URL = import.meta.env.VITE_API_URL || "";
     setServerError(null);
     const { email, password } = formData;
@@ -41,9 +41,9 @@ export function LoginPage() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          throw new Error("Invalid email or password");
+          throw new Error("Nieprawidłowy adres e-mail lub hasło");
         }
-        throw new Error("Something went wrong. Please try again later.");
+        throw new Error("Coś poszło nie tak. Spróbuj ponownie później.");
       }
 
       const data = await response.json().catch(() => null);
@@ -75,7 +75,7 @@ export function LoginPage() {
         setServerError(err.message);
       }
     }
-  }
+  };
 
   return (
     <section
@@ -93,7 +93,7 @@ export function LoginPage() {
             aria-selected={false}
             className="auth-tab-inactive py-2 rounded-md text-xs font-mono font-medium tracking-wide uppercase transition-all duration-150 text-center bg-transparent text-slate-500 hover:text-black no-underline"
           >
-            Create Account
+            Utwórz konto
           </Link>
           <Link
             to="/login"
@@ -101,27 +101,27 @@ export function LoginPage() {
             aria-selected={true}
             className="auth-tab-active py-2 rounded-md text-xs font-mono font-semibold tracking-wide uppercase transition-all duration-150 text-center bg-white text-[#010120] shadow-sm no-underline"
           >
-            Log In
+            Zaloguj się
           </Link>
         </div>
 
         <header className="mb-5">
           <p className="m-0 mb-1.5 text-[#85858e] text-[10px] font-mono tracking-widest uppercase">
-            Resume progress
+            Kontynuuj postępy
           </p>
           <h2
             id="login-title"
             className="m-0 mb-1 text-2xl font-bold tracking-tight text-[#010120] dark:text-white"
           >
-            Welcome back
+            Witaj ponownie
           </h2>
           <p className="m-0 text-[#777781] dark:text-[#a0a0ab] text-sm tracking-tight">
-            Need a private account?{" "}
+            Nie masz konta?{" "}
             <Link
               to="/signup"
               className="p-0 border-0 bg-transparent text-[#010120] dark:text-white font-semibold underline underline-offset-4 hover:text-[#7472d5] dark:hover:text-[#bdbbff]"
             >
-              Sign up
+              Zarejestruj się
             </Link>
           </p>
         </header>
@@ -136,7 +136,7 @@ export function LoginPage() {
           <div className="grid gap-3.5">
             <label className="grid gap-1.5">
               <span className="text-slate-500 dark:text-slate-400 text-[10px] font-mono font-medium tracking-wider uppercase">
-                EMAIL ADDRESS
+                ADRES E-MAIL
               </span>
               <input
                 {...register("email")}
@@ -159,7 +159,7 @@ export function LoginPage() {
 
             <label className="grid gap-1.5">
               <span className="text-slate-500 dark:text-slate-400 text-[10px] font-mono font-medium tracking-wider uppercase">
-                PASSWORD
+                HASŁO
               </span>
 
               <PasswordInput
@@ -167,7 +167,7 @@ export function LoginPage() {
                 error={errors.password != null}
                 disabled={isSubmitting}
                 autoComplete="current-password"
-                placeholder="Enter password"
+                placeholder="Wprowadź hasło"
               />
               {errors.password && (
                 <p className="text-red-500 text-xs mt-1 m-0">
@@ -185,13 +185,13 @@ export function LoginPage() {
                 className="w-4 h-4 rounded border border-slate-300 accent-[#010120] cursor-pointer"
                 disabled={isSubmitting}
               />
-              <span>Remember me</span>
+              <span>Zapamiętaj mnie</span>
             </label>
             <Link
               to="/forgot-password"
               className="text-slate-500 dark:text-slate-400 hover:text-[#010120] dark:hover:text-white hover:underline"
             >
-              Forgot password?
+              Zapomniałeś hasła?
             </Link>
           </div>
 
@@ -201,11 +201,11 @@ export function LoginPage() {
             className="auth-submit-btn group w-full h-12 flex items-center justify-center gap-2 border border-black rounded-lg bg-black text-white hover:bg-neutral-800 active:translate-y-0 font-mono text-xs font-semibold tracking-wider uppercase shadow-md transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lg cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed mt-4"
           >
             {isSubmitting ? (
-              <span>AUTHENTICATING...</span>
+              <span>UWIERZYTELNIANIE...</span>
             ) : (
               <>
                 <LogIn className="size-4" />
-                LOG IN
+                ZALOGUJ SIĘ
               </>
             )}
           </button>
