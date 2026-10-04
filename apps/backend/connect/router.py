@@ -11,10 +11,12 @@ from connect.schemas import (
 )
 from connect.service import (
     get_foundation_account_status,
+    get_goal_recipient_status,
     get_user_account_status,
     pay_out_breach,
     pay_out_goal_purchase,
     start_foundation_onboarding,
+    start_goal_recipient_onboarding,
     start_user_onboarding,
 )
 from auth.dependencies import AdminDep, CurrentUserDep
@@ -46,6 +48,21 @@ async def user_onboarding(
 ) -> OnboardingResponse:
     account_id, url = await start_user_onboarding(session, user_id)
     return OnboardingResponse(stripe_account_id=account_id, onboarding_url=url)
+
+
+@router.post("/goals/{goal_id}/recipient-onboarding", response_model=OnboardingResponse)
+async def goal_recipient_onboarding(
+    goal_id: UUID, session: DBSessionDep, user: AdminDep
+) -> OnboardingResponse:
+    account_id, url = await start_goal_recipient_onboarding(session, goal_id)
+    return OnboardingResponse(stripe_account_id=account_id, onboarding_url=url)
+
+
+@router.get("/goals/{goal_id}/recipient-status", response_model=AccountStatusResponse)
+async def goal_recipient_status(
+    goal_id: UUID, session: DBSessionDep, user: AdminDep
+) -> AccountStatusResponse:
+    return await get_goal_recipient_status(session, goal_id)
 
 
 

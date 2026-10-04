@@ -67,6 +67,63 @@ async def start_user_onboarding(
     return account_id, await _create_onboarding_link(account_id)
 
 
+async def create_goal_stripe_accounts(goal_id: UUID) -> tuple[str, str]:
+    """Create the two distinct recipient accounts associated with a goal."""
+    _require_stripe()
+    collection = await _create_account(
+        entity_type="non_profit",
+        contact_email="contact@sober.pl",
+        metadata={"goal_id": str(goal_id), "purpose": "collection"},
+    )
+    completion = await _create_account(
+        entity_type="non_profit",
+        contact_email="contact@sober.pl",
+        metadata={"goal_id": str(goal_id), "purpose": "completion"},
+    )
+    return collection.id, completion.id
+
+
+async def ensure_transfer_capability(account_id: str) -> None:
+    """Fail with an actionable response if a Connect recipient is not ready."""
+    if not await _has_transfer_capability(account_id):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Stripe account {account_id} is not enabled to receive transfers. "
+                "Finish onboarding for this account and enable the transfers capability."
+            ),
+        )
+
+
+async def start_goal_recipient_onboarding(
+    session: AsyncSession, goal_id: UUID
+) -> tuple[str, str]:
+    """Create or reuse a goal completion account and return its onboarding URL."""
+    _require_stripe()
+    async with transaction(session):
+        goal = await session.get(Goal, goal_id, with_for_update=True)
+        if goal is None:
+            raise HTTPException(status_code=404, detail="Goal not found")
+        if goal.completion_stripe_account_id is None:
+            account = await _create_account(
+                entity_type="non_profit",
+                contact_email="contact@sober.pl",
+                metadata={"goal_id": str(goal.id), "purpose": "completion"},
+            )
+            goal.completion_stripe_account_id = account.id
+        account_id = goal.completion_stripe_account_id
+    return account_id, await _create_onboarding_link(account_id)
+
+
+async def get_goal_recipient_status(
+    session: AsyncSession, goal_id: UUID
+) -> AccountStatusResponse:
+    goal = await session.get(Goal, goal_id)
+    if goal is None:
+        raise HTTPException(status_code=404, detail="Goal not found")
+    return await _account_status(goal.completion_stripe_account_id)
+
+
 async def get_foundation_account_status(
     session: AsyncSession, foundation_id: UUID
 ) -> AccountStatusResponse:
@@ -272,22 +329,6 @@ async def pay_out_goal_completion(session: AsyncSession, goal_id: UUID) -> Payou
     return payout
 
 
-async def create_goal_stripe_accounts(goal_id: UUID) -> tuple[str, str]:
-    """Create the collection and completion recipient accounts for a goal."""
-    _require_stripe()
-    collection = await _create_account(
-        entity_type="non_profit",
-        contact_email=settings.vapid_subject.removeprefix("mailto:"),
-        metadata={"goal_id": str(goal_id), "purpose": "collection"},
-    )
-    completion = await _create_account(
-        entity_type="non_profit",
-        contact_email=settings.vapid_subject.removeprefix("mailto:"),
-        metadata={"goal_id": str(goal_id), "purpose": "completion"},
-    )
-    return collection.id, completion.id
-
-
 async def cancel_goal_subscriptions(session: AsyncSession, goal_id: UUID) -> None:
     """Cancel Stripe subscriptions and pending checkout sessions for a goal."""
     subscriptions = list(
@@ -439,6 +480,8 @@ async def _transfer(
     session: AsyncSession, payout: Payout, destination: str, challenge_id: UUID
 ) -> bool:
     """Create the Stripe transfer; records the outcome on the payout."""
+    await ensure_transfer_capability(destination)
+
     session.add(payout)
     await session.flush()
     try:
@@ -464,6 +507,28 @@ async def _transfer(
     payout.stripe_transfer_id = transfer.id
     payout.status = PayoutStatus.PAID
     return True
+
+
+async def _has_transfer_capability(account_id: str) -> bool:
+    """Return whether a Connect account is currently able to receive transfers."""
+    try:
+        account = await run_in_threadpool(
+            _stripe_client().v2.core.accounts.retrieve,
+            account_id,
+            {"include": ["configuration.recipient"]},
+        )
+    except stripe.StripeError as error:
+        raise HTTPException(
+            status_code=502, detail="Could not verify Stripe transfer capability"
+        ) from error
+
+    recipient = (account.to_dict().get("configuration") or {}).get("recipient") or {}
+    capability = (
+        (recipient.get("capabilities") or {})
+        .get("stripe_balance", {})
+        .get("stripe_transfers", {})
+    )
+    return capability.get("status") == "active"
 
 
 async def _release_subscription_deposit(
