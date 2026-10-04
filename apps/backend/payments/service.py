@@ -1,9 +1,12 @@
+import logging
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
 import stripe
+from connect.schemas import BreachPayoutRequest
+from connect.service import pay_out_breach
 from core.settings import settings
 from core.transaction import transaction
 from fastapi import HTTPException
@@ -20,6 +23,8 @@ from payments.schemas import CreateSubscriptionRequest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.concurrency import run_in_threadpool
+
+logger = logging.getLogger(__name__)
 
 GOAL_PERIOD_INTERVALS = {
     GoalPeriod.DAILY: SubscriptionInterval.DAY,
@@ -182,6 +187,10 @@ async def _process_invoice_paid(session: AsyncSession, invoice: dict[str, Any]) 
         return
     net_amount_gr = await _invoice_net_amount(invoice["id"])
 
+    is_first_period = False
+    breach_user_group_id: UUID | None = None
+    breach_challenge_id: UUID | None = None
+
     async with transaction(session):
         already_recorded = await session.scalar(
             select(Payment.id).where(Payment.stripe_invoice_id == invoice["id"])
@@ -197,6 +206,8 @@ async def _process_invoice_paid(session: AsyncSession, invoice: dict[str, Any]) 
         goal = await session.get(Goal, subscription.goal_id, with_for_update=True)
         if goal is None:
             return
+
+        is_first_period = subscription.collected_pln == 0
 
         amount_pln = amount_paid // 100
         session.add(
@@ -231,6 +242,38 @@ async def _process_invoice_paid(session: AsyncSession, invoice: dict[str, Any]) 
         else:
             balance.balance += Decimal(amount_pln)
             balance.updated_at = datetime.now(timezone.utc)
+
+        # The period that just ended is validated now, before it is reset:
+        # every day in `completions` must be True, or this member breached
+        # the challenge for that period.
+        if not is_first_period:
+            user_group = await session.get(
+                UserGroup, subscription.user_group_id, with_for_update=True
+            )
+            if user_group is not None:
+                if not _completions_all_true(user_group.completions):
+                    breach_user_group_id = user_group.id
+                    breach_challenge_id = goal.challenge_id
+                user_group.completions = []
+
+    if breach_user_group_id is not None and breach_challenge_id is not None:
+        try:
+            await pay_out_breach(
+                session,
+                BreachPayoutRequest(
+                    user_group_id=breach_user_group_id,
+                    challenge_id=breach_challenge_id,
+                ),
+            )
+        except HTTPException:
+            logger.exception(
+                "Addiction validation breach payout failed for user_group %s",
+                breach_user_group_id,
+            )
+
+
+def _completions_all_true(completions: list[bool]) -> bool:
+    return bool(completions) and all(completions)
 
 
 async def _process_subscription_deleted(

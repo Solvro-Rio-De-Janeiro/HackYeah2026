@@ -39,6 +39,11 @@ class UserGroupRepository:
     async def get_by_id(self, user_group_id: UUID) -> UserGroup | None:
         return await self.session.get(UserGroup, user_group_id)
 
+    async def get_all_active(self) -> list[UserGroup]:
+        statement = select(UserGroup).where(UserGroup.active.is_(True))
+        result = await self.session.scalars(statement)
+        return list(result.all())
+
     async def get_by_user_id(self, user_id: UUID) -> list[UserGroup]:
         statement = (
             select(UserGroup)
