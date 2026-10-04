@@ -13,8 +13,10 @@ router = APIRouter()
 @router.post("/goal", response_model=GoalResponse, status_code=status.HTTP_201_CREATED)
 async def create_goal(request: CreateGoalRequest, session: DBSessionDep) -> GoalResponse:
     handler = CreateGoalHandler(session)
-    goal = await handler.handle(request)
-    return GoalResponse.model_validate(goal)
+    goal, checkout_urls = await handler.handle(request)
+    response = GoalResponse.model_validate(goal)
+    response.checkout_urls = checkout_urls
+    return response
 
 
 @router.patch("/goal/{id}")

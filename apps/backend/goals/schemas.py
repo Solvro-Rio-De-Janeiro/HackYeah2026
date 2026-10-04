@@ -1,5 +1,5 @@
 from uuid import UUID
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from goals.models import AddictionType, GoalPeriod
 
@@ -28,3 +28,4 @@ class GoalResponse(BaseModel):
     target_price: float
     period: GoalPeriod
     challenge_id: UUID
+    checkout_urls: list[str] = Field(default_factory=list)
