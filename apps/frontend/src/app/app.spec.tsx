@@ -1,4 +1,4 @@
-import { afterEach, render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import App from './app';
@@ -58,6 +58,55 @@ describe('App', () => {
     expect(localStorage.getItem('odnowa-auth-token')).toBeNull();
   });
 
+  it('should redirect to dashboard after a successful login', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ access_token: 'test-token' }),
+        })
+        .mockResolvedValue({
+          ok: true,
+          status: 200,
+          json: async () => authenticatedUser,
+        }),
+    );
+
+    render(
+      <MemoryRouter initialEntries={['/login']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('name@domain.com'), {
+      target: { value: authenticatedUser.email },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Wprowadź hasło'), {
+      target: { value: 'valid-password' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /ZALOGUJ SIĘ/i }));
+
+    expect(await screen.findByLabelText('Sober Home')).toBeTruthy();
+    expect(localStorage.getItem('odnowa-auth-token')).toBe('test-token');
+  });
+
+  it.each(['/login', '/signup'])(
+    'should redirect a signed-in user away from %s',
+    async (path) => {
+      setValidSession();
+      render(
+        <MemoryRouter initialEntries={[path]}>
+          <App />
+        </MemoryRouter>,
+      );
+
+      expect(await screen.findAllByText('Moja grupa')).not.toHaveLength(0);
+      expect(screen.queryByText('Welcome back')).toBeNull();
+      expect(screen.queryByText('Create an account')).toBeNull();
+    },
+  );
+
   it('should render successfully on root', async () => {
     setValidSession();
     const { baseElement } = render(
@@ -81,7 +130,7 @@ describe('App', () => {
     expect(screen.getByText('Przyłapania')).toBeTruthy();
   });
 
-  it('should show logout for a signed-in user and clear their session on logout', async () => {
+  it('should clear the session and redirect to login on logout', async () => {
     setValidSession();
     render(
       <MemoryRouter initialEntries={['/dashboard']}>
@@ -93,7 +142,8 @@ describe('App', () => {
 
     expect(localStorage.getItem('odnowa-auth-token')).toBeNull();
     expect(localStorage.getItem('odnowa-user')).toBeNull();
-    expect(screen.getByText('Witaj ponownie')).toBeTruthy();
+    expect(await screen.findByText('Witaj ponownie')).toBeTruthy();
+    expect(screen.queryByLabelText('Sober Home')).toBeNull();
   });
 
   it('should render Sign Up page on /signup', () => {
