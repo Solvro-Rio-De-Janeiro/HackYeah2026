@@ -1,37 +1,39 @@
-import React, { useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import { useDashboard, money, dailyAmount } from '../../context/DashboardContext';
-import Icon from '../common/Icon';
+import React, { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+import {
+  useDashboard,
+  money,
+  dailyAmount,
+} from "../../context/DashboardContext";
+import Icon from "../common/Icon";
 
 interface GoalDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onNavigateToIncidents: () => void;
 }
 
-export function GoalDetailsModal({
-  isOpen,
-  onClose,
-  onNavigateToIncidents
-}: GoalDetailsModalProps) {
+export function GoalDetailsModal({ isOpen, onClose }: GoalDetailsModalProps) {
   const { activeGroup, members, incidents } = useDashboard();
   const dialogRef = useRef<HTMLElement>(null);
 
   const total = members.reduce((sum, member) => sum + member.amount, 0);
-  const reports = incidents.filter((incident) => incident.groupId === activeGroup.id);
+  const reports = incidents.filter(
+    (incident) => incident.groupId === activeGroup.id,
+  );
   const rate = dailyAmount(activeGroup);
 
   useEffect(() => {
     if (!isOpen) return;
 
     const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-      if (event.key !== 'Tab') return;
+      if (event.key === "Escape") onClose();
+      if (event.key !== "Tab") return;
 
-      const buttons = dialogRef.current?.querySelectorAll<HTMLButtonElement>('button');
+      const buttons =
+        dialogRef.current?.querySelectorAll<HTMLButtonElement>("button");
       if (!buttons?.length) return;
       const first = buttons[0];
       const last = buttons[buttons.length - 1];
@@ -45,9 +47,9 @@ export function GoalDetailsModal({
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = previousOverflow;
     };
   }, [isOpen, onClose]);
@@ -80,7 +82,10 @@ export function GoalDetailsModal({
           {activeGroup.name} // SZCZEGÓŁY CELU
         </span>
 
-        <h2 id="goal-details-title" className="text-3xl font-semibold tracking-tight text-[#010120] mb-2 [overflow-wrap:anywhere]">
+        <h2
+          id="goal-details-title"
+          className="text-3xl font-semibold tracking-tight text-[#010120] mb-2 [overflow-wrap:anywhere]"
+        >
           {activeGroup.goal}
         </h2>
 
@@ -125,14 +130,18 @@ export function GoalDetailsModal({
           </div>
 
           {members.map((member, index) => {
-            const count = reports.filter((incident) => incident.person === member.name).length;
+            const count = reports.filter(
+              (incident) => incident.person === member.name,
+            ).length;
             return (
               <div
                 className="goal-member-row grid grid-cols-[1.6fr_1fr_0.8fr] items-center gap-3 py-4 border-b border-[#ebebeb]"
                 key={member.name}
               >
                 <div className="goal-member-name flex items-center gap-3 min-w-0">
-                  <span className={`member-avatar ${member.color} w-8 h-8 rounded-full grid place-items-center text-[9px] font-mono font-bold flex-shrink-0`}>
+                  <span
+                    className={`member-avatar ${member.color} w-8 h-8 rounded-full grid place-items-center text-[9px] font-mono font-bold flex-shrink-0`}
+                  >
                     {member.initials}
                   </span>
                   <div className="flex flex-col gap-0.5 min-w-0">
@@ -145,7 +154,7 @@ export function GoalDetailsModal({
                       )}
                     </strong>
                     <span className="text-[10px] text-[#727279]">
-                      {index === 0 ? 'Twoja historia' : 'Członek grupy'}
+                      {index === 0 ? "Twoja historia" : "Członek grupy"}
                     </span>
                   </div>
                 </div>
@@ -154,10 +163,12 @@ export function GoalDetailsModal({
                   {money(member.amount)}
                 </strong>
 
-                <span className={`caught-count flex flex-col items-end gap-0.5 text-base font-medium ${count ? 'has-reports text-[#a16743]' : 'text-[#727279]'}`}>
+                <span
+                  className={`caught-count flex flex-col items-end gap-0.5 text-base font-medium ${count ? "has-reports text-[#a16743]" : "text-[#727279]"}`}
+                >
                   {count}
                   <span className="text-[8px] text-[#727279] font-normal">
-                    {count === 1 ? 'zgłoszenie' : 'zgłoszeń'}
+                    {count === 1 ? "zgłoszenie" : "zgłoszeń"}
                   </span>
                 </span>
               </div>
@@ -167,14 +178,14 @@ export function GoalDetailsModal({
 
         <div className="goal-details-footer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-6 pt-4 border-t border-[#ebebeb]">
           <p className="text-[10px] leading-relaxed text-[#727279] m-0 max-w-md">
-            Kwoty pochodzą ze zgromadzonych wpłat. Liczniki pokazują zapisane zgłoszenia — nie zweryfikowane naruszenia.
+            Kwoty pochodzą ze zgromadzonych wpłat. Liczniki pokazują zapisane
+            zgłoszenia — nie zweryfikowane naruszenia.
           </p>
           <button
             type="button"
             className="primary bg-[#010120] text-white hover:bg-[#292943] rounded py-3 px-5 font-mono text-xs tracking-wider uppercase inline-flex items-center gap-2 cursor-pointer transition-all flex-shrink-0"
             onClick={() => {
               onClose();
-              onNavigateToIncidents();
             }}
           >
             ZOBACZ HISTORIĘ PRZYŁAPAŃ ↗
@@ -182,7 +193,7 @@ export function GoalDetailsModal({
         </div>
       </section>
     </div>,
-    document.body
+    document.body,
   );
 }
 
