@@ -211,6 +211,127 @@ async def pay_out_goal_purchase(
     return payout
 
 
+async def pay_out_goal_completion(session: AsyncSession, goal_id: UUID) -> Payout:
+    """Send a completed goal's collected funds to its completion Stripe account."""
+    _require_stripe()
+    async with transaction(session):
+        goal = await session.get(Goal, goal_id, with_for_update=True)
+        if goal is None:
+            raise HTTPException(status_code=404, detail="Goal not found")
+        challenge = await session.get(
+            Challenge, goal.challenge_id, with_for_update=True
+        )
+        if challenge is None:
+            raise HTTPException(status_code=404, detail="Challenge not found")
+        if goal.completion_stripe_account_id is None:
+            raise HTTPException(
+                status_code=409,
+                detail="Goal has no completion Stripe account",
+            )
+        memberships = list(
+            await session.scalars(
+                select(UserGroup.id).where(UserGroup.group_id == challenge.group_id)
+            )
+        )
+        if not memberships:
+            raise HTTPException(
+                status_code=404, detail="No users found for this group"
+            )
+        subscriptions = list(
+            await session.scalars(
+                select(Subscription)
+                .where(
+                    Subscription.goal_id == goal.id,
+                    Subscription.user_group_id.in_(memberships),
+                )
+                .with_for_update()
+            )
+        )
+        amount_gr = sum(
+            subscription.collected_net_gr for subscription in subscriptions
+        )
+        if amount_gr <= 0:
+            raise HTTPException(
+                status_code=409, detail="Goal has no funds to transfer"
+            )
+
+        payout = Payout(
+            kind=PayoutKind.GOAL_COMPLETION,
+            amount_gr=amount_gr,
+            goal_id=goal.id,
+            user_group_id=memberships[0],
+        )
+        if await _transfer(
+            session, payout, goal.completion_stripe_account_id, challenge.id
+        ):
+            for subscription in subscriptions:
+                await _release_subscription_deposit(session, subscription)
+            goal.saldo = 0
+
+    _raise_if_failed(payout)
+    return payout
+
+
+async def create_goal_stripe_accounts(goal_id: UUID) -> tuple[str, str]:
+    """Create the collection and completion recipient accounts for a goal."""
+    _require_stripe()
+    collection = await _create_account(
+        entity_type="non_profit",
+        contact_email=settings.vapid_subject.removeprefix("mailto:"),
+        metadata={"goal_id": str(goal_id), "purpose": "collection"},
+    )
+    completion = await _create_account(
+        entity_type="non_profit",
+        contact_email=settings.vapid_subject.removeprefix("mailto:"),
+        metadata={"goal_id": str(goal_id), "purpose": "completion"},
+    )
+    return collection.id, completion.id
+
+
+async def cancel_goal_subscriptions(session: AsyncSession, goal_id: UUID) -> None:
+    """Cancel Stripe subscriptions and pending checkout sessions for a goal."""
+    subscriptions = list(
+        await session.scalars(
+            select(Subscription)
+            .where(Subscription.goal_id == goal_id)
+            .with_for_update()
+        )
+    )
+    for subscription in subscriptions:
+        try:
+            if (
+                subscription.status == SubscriptionStatus.ACTIVE
+                and subscription.stripe_subscription_id
+            ):
+                await run_in_threadpool(
+                    stripe.Subscription.cancel,
+                    subscription.stripe_subscription_id,
+                    api_key=settings.stripe_secret_key,
+                    idempotency_key=f"cancel-subscription-{subscription.id}",
+                )
+            elif (
+                subscription.status == SubscriptionStatus.INCOMPLETE
+                and subscription.stripe_checkout_session_id
+            ):
+                await run_in_threadpool(
+                    stripe.checkout.Session.expire,
+                    subscription.stripe_checkout_session_id,
+                    api_key=settings.stripe_secret_key,
+                    idempotency_key=f"expire-checkout-{subscription.id}",
+                )
+        except stripe.StripeError as error:
+            raise HTTPException(
+                status_code=502,
+                detail="Could not cancel Stripe subscription for completed goal",
+            ) from error
+
+    async with transaction(session):
+        for subscription in subscriptions:
+            if subscription.status != SubscriptionStatus.CANCELED:
+                subscription.status = SubscriptionStatus.CANCELED
+                subscription.canceled_at = datetime.now(timezone.utc)
+
+
 def _stripe_client() -> stripe.StripeClient:
     return stripe.StripeClient(settings.stripe_secret_key)
 

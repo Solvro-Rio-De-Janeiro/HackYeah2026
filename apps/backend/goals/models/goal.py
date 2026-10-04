@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from sqlalchemy import UUID, Enum, Float, ForeignKey, Integer, Text
+from sqlalchemy import UUID, Enum, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.db_config import Base
@@ -15,6 +15,12 @@ class Goal(Base):
     )
     saldo: Mapped[float] = mapped_column(Float, nullable=False)
     target_price: Mapped[float] = mapped_column(Float, nullable=False)
+    collection_stripe_account_id: Mapped[str | None] = mapped_column(
+        String(255), nullable=True, unique=True
+    )
+    completion_stripe_account_id: Mapped[str | None] = mapped_column(
+        String(255), nullable=True, unique=True
+    )
     period: Mapped[GoalPeriod] = mapped_column(
         Enum(GoalPeriod, name="goal_period"), nullable=False
     )

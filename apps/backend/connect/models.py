@@ -22,6 +22,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 class PayoutKind(StrEnum):
     FOUNDATION_BREACH = "foundation_breach"
     GOAL_PURCHASE = "goal_purchase"
+    GOAL_COMPLETION = "goal_completion"
 
 
 class PayoutStatus(StrEnum):
